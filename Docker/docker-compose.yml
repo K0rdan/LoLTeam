@@ -1,0 +1,32 @@
+version: '2'
+
+services: 
+    db:
+        image: mysql:latest
+        container_name: lolteam-db
+        volumes: 
+            # Default MySQL data volume
+            - /var/lib/mysql
+            # TODO : Custom directory with our SQL files
+            - ./../SQL:/home
+        ports:
+            # Default MySQL listening port 
+            - "3306"
+        environment:
+            # Environment variables preceed by MYSQL_
+            - MYSQL_ROOT_PASSWORD=cky_w+IQ@l
+            - MYSQL_DATABASE=lolteam
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:latest
+        container_name: lolteam-phpmyadmin
+        volumes:
+            # Login sessions to MySQL
+            - /sessions
+        ports:
+            - 8080:80
+        environment:
+            # Environment variables preceed by PMA_
+            - PMA_ARBITRARY=1
+        links:
+            - db
