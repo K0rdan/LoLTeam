@@ -1,0 +1,18 @@
+{
+  "name": "lolteam",
+  "version": "0.0.1",
+  "description": "LoL Team Manager",
+  "main": "./../js/main.js",
+  "dependencies": {
+      "react": "^15.3.1",
+      "react-dom": "^15.3.1",
+      "babel-core": "^6.14.0",
+      "babel-loader": "^6.2.5",
+      "babel-preset-react": "^6.11.1",
+      "babel-preset-es2015": "^6.14.0",
+      "webpack": "^1.13.2"
+  },
+  "devDependencies": {
+      "webpack-dev-server":"^1.15.1"
+  }
+}
