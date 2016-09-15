@@ -2,7 +2,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
  
-// Custome imports
+// Custom imports
+import API from './lib/api.js';
+import User from './user';
 import Header from './components/header';
 import SideMenu from './components/sidemenu';
 import Content from './components/content';
@@ -10,6 +12,10 @@ import Content from './components/content';
 class App extends React.Component {
     constructor(){
         super();
+
+        // Init vars
+        this.API = new API();
+        this.user = new User(this.API);
 
         // Init state
         this.state = {
@@ -25,7 +31,7 @@ class App extends React.Component {
             <div id="grid">
                 <Header toggleMenu={this._toggleSideMenu} menuOpen={this.state.isSideMenuOpen}/>
                 <SideMenu menuOpen={this.state.isSideMenuOpen}/>
-                <Content menuOpen={this.state.isSideMenuOpen}/>
+                <Content user={this.user} menuOpen={this.state.isSideMenuOpen}/>
             </div>
         );
     }
