@@ -1,3 +1,6 @@
+Docker:
+    Build then run containers
+        > docker-compose up -d --build
 Web :   
     1) Install dependencies :
         > CD config
