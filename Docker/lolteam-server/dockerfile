@@ -1,16 +1,12 @@
-FROM node:latest
+FROM ubuntu:latest
 
+WORKDIR /home/server/js
 
-# Remove bin-links to avoid error with windows shared volumes
-RUN npm config set bin-links false \
-  && npm config set registry http://registry.npmjs.org/ \
-  && cd $(npm root -g)/npm \
-  && npm install webpack -g --loglevel=error \
-  && npm install fs-extra --loglevel=error \
-  && sed -i -e s/graceful-fs/fs-extra/ -e s/fs\.rename/fs.move/ ./lib/utils/rename.js
+RUN apt-get update && apt-get install curl -y &&\
+  curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
+  apt-get install nodejs -y && \
+  rm -rf node_modules && \
+  npm install webpack -g && \
+  npm install
 
-
-WORKDIR /home/app/server/js
-# If there is already a 'node_modules' directory we have to delete it.
-RUN rm -rf node_modules \
-  && npm install --loglevel=error
+CMD webpack --watch --watch-polling
