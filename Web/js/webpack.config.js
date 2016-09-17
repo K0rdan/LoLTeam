@@ -6,6 +6,9 @@ module.exports = {
         path: './',
         filename: "bundle.js"
     },
+    watchOptions: {
+        poll: true
+    },
     devServer: {
         inline: true,
         contentBase: "./"
