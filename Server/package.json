@@ -1,0 +1,9 @@
+{
+    "name": "lolteam-server",
+    "version": "0.0.1",
+    "main": "./src/main.js",
+    "dependencies": {
+        "express": "^4.14.0",
+        "mysql": "^2.11.1"
+    }
+}

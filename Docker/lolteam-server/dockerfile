@@ -1,12 +1,12 @@
 FROM ubuntu:latest
 
-WORKDIR /home/server/js
-
+# INSTALL NODEJS
 RUN apt-get update && apt-get install curl -y &&\
   curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
-  apt-get install nodejs -y && \
-  rm -rf node_modules && \
-  npm install webpack -g && \
-  npm install
+  apt-get install nodejs -y
 
-CMD webpack --watch --watch-polling
+#SETUP SERVER
+WORKDIR /home/server
+RUN rm -rf node_modules && ls && \
+  npm install
+#CMD node main.js
