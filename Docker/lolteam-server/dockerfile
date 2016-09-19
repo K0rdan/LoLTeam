@@ -7,6 +7,6 @@ RUN apt-get update && apt-get install curl -y &&\
 
 #SETUP SERVER
 WORKDIR /home/server
-RUN rm -rf node_modules && ls && \
-  npm install
-#CMD node main.js
+RUN rm -rf node_modules
+CMD npm install --no-bin-links
+#CMD node ./src/main.js
