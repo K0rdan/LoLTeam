@@ -1,6 +1,14 @@
 Docker:
     Build then run containers
         > docker-compose up -d --build
+
+PhpMyAdmin:
+    Open the web view to access to the PhpMyAdmin interface.
+    > Select the lolteam database
+    > Go to Import :
+        Browse to the ./SQL/init.sql file
+    > Execute
+
 Web :   
     1) Install dependencies :
         > CD config

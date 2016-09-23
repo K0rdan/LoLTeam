@@ -204,6 +204,37 @@ INSERT INTO `roles` (`id`, `name`) VALUES
 (7, 'N/A');
 
 --
+-- Structure de la table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `name` text NOT NULL COMMENT 'PVP.net limit',
+  `pass` text NOT NULL COMMENT 'PVP.net limit',
+  `email` text NOT NULL COMMENT 'RFC compliance'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Index pour les tables exportées
+--
+
+--
+-- Index pour la table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT pour les tables exportées
+--
+
+--
+-- AUTO_INCREMENT pour la table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Indexes for dumped tables
 --
 

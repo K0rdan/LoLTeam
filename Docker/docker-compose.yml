@@ -51,7 +51,7 @@ services:
         volumes:
             - ./../Server:/home/server
         ports:
-            - "${SERVER_PORT}:80"
+            - "${SERVER_PORT}:${SERVER_PORT}"
         command: node /home/server/src/main.js
         links:
-            - db
+            - db:mysql
