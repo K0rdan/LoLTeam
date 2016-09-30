@@ -1,24 +1,18 @@
-// Lib Constant
+// Lib Imports
 const express   = require('express');
 const mysql     = require('mysql');
 
-// Custom Constant 
-const PORT = 8000;
-const MYSQL_CONF = {
-    host        : 'lolteam-db',
-    localAddress: 'lolteam-db',
-    user        : 'root',
-    password    : 'cky_w+IQ@l',
-    database    : 'lolteam'
-};
+// Custom Imports
+const Server    = require('./server');
 
 // Start
-var app = null, connection = null, isConnected = false;
+new Server();
+/*var app = null, connection = null, isConnected = false;
 
 init();
 app.get("/",route_main);
-var server = app.listen(PORT, function() {
-  log('Server listening on port ' + server.address().port);
+var srv = app.listen(PORT, function() {
+  log("SERVER",'Server listening on port ' + srv.address().port);
 });
 
 
@@ -71,4 +65,4 @@ function route_main(req, res) {
                 log("MYSQL", err);
         });
     }
-}
+}*/
