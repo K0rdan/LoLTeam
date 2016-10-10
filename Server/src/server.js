@@ -12,8 +12,7 @@ module.exports = class Server {
         this.isConnected = false;
 
         this.listen(Config.SERVER.PORT);
-        if(this.isConnected)
-            this._setupRoutes();
+        this._setupRoutes();
     }
 
     _getDate() {
@@ -41,11 +40,12 @@ module.exports = class Server {
     }
 
     listen(port = Config.SERVER.PORT) {
+        var me = this;
         this.app = express();
         this.connection = mysql.createConnection(Config.MYSQL);
         this.connection.connect(this._mysqlConnectionHandler);
         this.app.listen(port, () => {
-            this._log("SERVER",'Server listening on port ' + port);
+            me._log("SERVER",'Server listening on port ' + port);
         });
     } 
 
@@ -63,6 +63,9 @@ module.exports = class Server {
             Login: require("./routes/login")
         };
 
-        app.get("/",this.dataRoutes.Login.bind(this.connection));
+        var me = this;
+        this.app.get("/",function(req, res) {
+            me.dataRoutes.Login(req, res, me.connection);
+        });
     }
 }
