@@ -9,13 +9,13 @@ export default class API {
         req.open('GET', 'http://' + config.SERVER + ':' + config.PORT + '/', true);
         req.onreadystatechange = function (e) {
             if (req.readyState == 4) {
-                if(req.status == 200)
+                if(req.status == 200 || req.status == 304)
                     console.log(req.responseText);
                 else
                     console.log("Erreur pendant le chargement de la page.\n");
             }
         };
-        req.send(null);
+        req.send();
     }
 
     login(username, password) {
