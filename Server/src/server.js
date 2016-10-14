@@ -1,9 +1,10 @@
 // Lib Imports
-const express   = require('express');
-const mysql     = require('mysql');
+const express    = require('express');
+const mysql      = require('mysql');
+const bodyParser = require('body-parser'); 
 
 // Custom Imports
-const Config    = require('./config');
+const Config     = require('./config');
 
 module.exports = class Server {
     constructor() {
@@ -64,7 +65,10 @@ module.exports = class Server {
         };
 
         var me = this;
-        this.app.get("/",function(req, res) {
+        this.app.use(bodyParser.json());
+        this.app.post("/login",function(req, res) {
+            console.log("SERVER - Receive login", req.body);
+            res.set('Content-Type', 'application/json');
             me.dataRoutes.Login(req, res, me.connection);
         });
     }
