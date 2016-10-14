@@ -52,6 +52,6 @@ services:
             - ./../Server:/home/server
         ports:
             - "${SERVER_PORT}:${SERVER_PORT}"
-        command: node /home/server/src/main.js
+        command: ["bash", "-c", "cd /home/server/ && npm install --loglevel warn --no-bin-links && node /home/server/src/main.js"]
         links:
             - db:mysql
