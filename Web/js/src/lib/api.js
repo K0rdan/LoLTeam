@@ -1,24 +1,34 @@
 const config = {
-    SERVER: '192.168.99.100',
+    SERVER: 'server',
     PORT: '8000'
 };
 
 export default class API {
     constructor() {
-        var req = new XMLHttpRequest();
-        req.open('GET', 'http://' + config.SERVER + ':' + config.PORT + '/', true);
-        req.onreadystatechange = function (e) {
-            if (req.readyState == 4) {
-                if(req.status == 200 || req.status == 304)
-                    console.log(req.responseText);
-                else
-                    console.log("Erreur pendant le chargement de la page.\n");
-            }
-        };
-        req.send();
+        
     }
 
     login(username, password) {
-        console.log("TODO login (user, pass) :", username, password);
+        fetch(new Request('http://' + config.SERVER + ':' + config.PORT + '/login',{ 
+            method: 'POST',
+            headers: new Headers({
+                "Content-Type": "application/json"
+            }),
+            mode: 'cors',
+            body: {user: encodeURIComponent(username), pass: encodeURIComponent(password)}
+
+        }))
+        .then(function(response) {
+            if(response.ok)
+                return response.json();       
+            else
+                console.log('[Login] Wrong network answer');
+        })
+        .then(function(json){
+            console.log("[Login] JSON : ", json);
+        })
+        .catch(function(error) {
+            console.log('[Login][Error] Fetch operation error : ' + error.message);
+        });
     }
 };
