@@ -16,7 +16,7 @@ export default class Login extends React.Component {
     _login() {
         // TEMP : use form values instead of forced values
         var username = 'test';
-        var password = 'test';
+        var password = 'pass';
 
         this.props.user.login(username, password);
     }

@@ -15,8 +15,10 @@ export default class API {
                 "Content-Type": "application/json"
             }),
             mode: 'cors',
-            body: {user: encodeURIComponent(username), pass: encodeURIComponent(password)}
-
+            body: JSON.stringify({
+                user: encodeURIComponent(username),
+                pass: encodeURIComponent(password),
+            })
         }))
         .then(function(response) {
             if(response.ok)
