@@ -33,20 +33,18 @@ services:
             - db
 
     webpack:
-        build: ./../Web/js
-        image: lolteam-webpack
+        image: node:6-slim
         container_name: lolteam-webpack
         volumes:
             - ./../Web:/home/webpack
         ports:
             - "${WEBPACK_PORT}:80"
-        command: webpack --watch --watch-polling
+        command: ["bash", "-c", "cd /home/webpack/js && npm install --loglevel warn --no-bin-links && webpack --watch --watch-polling"]
         links:
             - db
 
-    server:
-        build: ./../Server
-        image: lolteam-server
+    server:        
+        image: node:6-slim
         container_name: lolteam-server
         volumes:
             - ./../Server:/home/server
