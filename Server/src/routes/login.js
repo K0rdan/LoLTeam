@@ -1,9 +1,13 @@
 module.exports = function Login (req, res, mysql) {
-    var query = "SELECT * FROM lolteam.users";
-    mysql.query(query, function(err, rows, fields) {
-        if (!err)
-            res.json({users : rows});
-        else
-            console.log("MYSQL", err);
-    });
+    if(req.body && req.body.user && req.body.pass){
+        var query = "SELECT * FROM lolteam.users WHERE name=? AND pass=? LIMIT 1;";
+        mysql.query(query, [req.body.user, req.body.pass], function(err, row, fields) {
+            if (!err)
+                res.json({user : row});
+            else
+                console.log("MYSQL", err);
+        });
+    }
+    else 
+        res.json({ error: "Invalid parameter(s)"});
 }
