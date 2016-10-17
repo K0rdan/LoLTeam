@@ -39,7 +39,7 @@ services:
             - ./../Web:/home/webpack
         ports:
             - "${WEBPACK_PORT}:80"
-        command: ["bash", "-c", "cd /home/webpack/js && npm install --loglevel warn --no-bin-links && webpack --watch --watch-polling"]
+        command: ["bash", "-c", "npm install webpack -g --loglevel warn && cd /home/webpack/js && npm install --loglevel warn --no-bin-links && webpack --watch --watch-polling"]
         links:
             - db
 
