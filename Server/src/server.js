@@ -43,8 +43,14 @@ module.exports = class Server {
     listen(port = Config.SERVER.PORT) {
         var me = this;
         this.app = express();
+        this.app.use(function(req, res, next) {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            next();
+        });
+        this.app.use(bodyParser.json());
         this.connection = mysql.createConnection(Config.MYSQL);
-        this.connection.connect(this._mysqlConnectionHandler);
+        this.connection.connect(this._mysqlConnectionHandler.bind(this));
         this.app.listen(port, () => {
             me._log("SERVER",'Server listening on port ' + port);
         });
@@ -65,7 +71,6 @@ module.exports = class Server {
         };
 
         var me = this;
-        this.app.use(bodyParser.json());
         this.app.post("/login",function(req, res) {
             console.log("SERVER - Receive login", req.body);
             res.set('Content-Type', 'application/json');
