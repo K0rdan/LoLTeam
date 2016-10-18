@@ -209,9 +209,9 @@ INSERT INTO `roles` (`id`, `name`) VALUES
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `name` text NOT NULL COMMENT 'PVP.net limit',
-  `pass` text NOT NULL COMMENT 'PVP.net limit',
-  `email` text NOT NULL COMMENT 'RFC compliance'
+  `name` varchar(24) NOT NULL COMMENT 'PVP.net limit',
+  `pass` varchar(16) NOT NULL COMMENT 'PVP.net limit',
+  `email` varchar(254) NOT NULL COMMENT 'RFC compliance'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
