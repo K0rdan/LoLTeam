@@ -18,6 +18,10 @@ export default class Login extends React.Component {
         var username = 'test';
         var password = 'pass';
 
-        this.props.user.login(username, password);
+        var me = this;
+        this.props.user.login(username, password, function() {
+            if(me.props.onLogin)
+                me.props.onLogin(me.props.user);
+        });
     }
 };
