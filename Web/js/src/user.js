@@ -5,6 +5,9 @@ export default class User {
 
         this.id = null;
         this.name = null;
+        this.email = null;
+        this.summonerID = null;
+        this.matchs = null;
     }
 
     getId() {
@@ -13,7 +16,11 @@ export default class User {
     getName() {
         return this.name;
     }
+    getSummonerID() {
+        return this.summonerID;
+    }
 
+    // LOGIN
     login(username, password, callback) {
         var me = this;
         this.API.login(username, password, function(user) {
@@ -22,12 +29,22 @@ export default class User {
                 callback();
         });
     }
-
     _loginResponseHandler(user) {
-        if(user && user.id && user.name && user.email){
+        if(user && user.id && user.name && user.email && user.summonerID){
             this.id = user.id;
             this.name = user.name;
             this.email = user.email;
+            this.summonerID = user.summonerID;
+        }
+    }
+    //
+    // MATCH HISTORY
+    getMatchHistory(callback) {
+        if(this.summonerID != null) {
+            var me = this;
+            this.API.getMatchHistory(this.summonerID, function(matchs) {
+                console.log(matchs);
+            });
         }
     }
 };

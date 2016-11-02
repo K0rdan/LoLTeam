@@ -3,6 +3,7 @@ import React from 'react';
 
 // Custom imports
 import Login from './login';
+import MatchHistory from './matchHistory';
 
 var style = {
     container: {}
@@ -37,8 +38,11 @@ export default class Content extends React.Component {
     }
 
     render() {
-        if(this.user.getId() != null)
-            return (<div id="content" style={style.container}>Content</div>);
+        if(this.state.connected)
+            return (<div id="content" style={style.container}>
+                Content
+                <MatchHistory user={this.props.user} />
+            </div>);
         else
             return (<div id="content" style={style.container}><Login user={this.props.user} onLogin={this._onLogin}/></div>);
     }

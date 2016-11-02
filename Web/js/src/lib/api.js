@@ -49,4 +49,19 @@ export default class API {
             });
         }
     }
+
+    getMatchHistory(summonerID, callback) {
+        if(this._isValidParameter(summonerID) && callback) {
+            return fetch('http://' + config.SERVER + ':' + config.PORT + '/matchhistory/' + summonerID)
+            .then(function(response) {
+                if(response.ok)
+                    console.log(response.json());       
+                else
+                    console.log('[API][MatchHistory] Wrong network answer');
+            })
+            .catch(function(error) {
+                console.log('[API][MatchHistory][Error] Fetch operation error : ' + error.message);
+            });
+        }
+    }
 };

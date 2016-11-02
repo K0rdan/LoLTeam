@@ -15,13 +15,13 @@ export default class Login extends React.Component {
 
     _login() {
         // TEMP : use form values instead of forced values
-        var username = 'test';
+        var username = '0Kordan0';
         var password = 'pass';
 
         var me = this;
         this.props.user.login(username, password, function() {
             if(me.props.onLogin)
-                me.props.onLogin(me.props.user);
+                me.props.onLogin();
         });
     }
 };
