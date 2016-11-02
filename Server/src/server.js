@@ -1,7 +1,11 @@
 // Lib Imports
-const express    = require('express');
-const mysql      = require('mysql');
-const bodyParser = require('body-parser'); 
+const express      = require('express');
+const session      = require('express-session');
+const mysql        = require('mysql');
+const cookieParser = require('cookie-parser');
+const bodyParser   = require('body-parser');
+const redis        = require('redis');
+const redisStore   = require('connect-redis')(session);
 
 // Custom Imports
 const Config     = require('./utils/config');
@@ -14,6 +18,26 @@ module.exports = class Server {
         this.isConnected = false;
         this.clientPool = [];
 
+        // Custom binds
+        this._loginResultHandler = this._loginResultHandler.bind(this);
+        //
+
+        this.init();
+    }
+
+    init() {
+        this.redisClient = redis.createClient(Config.SERVER.REDIS.PORT, Config.SERVER.REDIS.HOST);
+        this.connection  = mysql.createConnection(Config.MYSQL);
+        this.connection.connect(this._mysqlConnectionHandler.bind(this));
+
+        var query = "SELECT * FROM lolteam.const WHERE name=? LIMIT 1;";
+        this.connection.query(query, ['RIOT_API_KEY'], function(err, row, fields) {
+            if (!err)
+                Config.RIOT.setAPIKey(row[0].value)
+            else
+                Log(["SERVER","MYSQL"], err);
+        });
+
         this.listen(Config.SERVER.PORT);
         this._setupRoutes();
     }
@@ -21,23 +45,37 @@ module.exports = class Server {
     listen(port = Config.SERVER.PORT) {
         var me = this;
         this.app = express();
+        // Security
+        this.app.disable('x-powered-by');
+        // Allowances
         this.app.use(function(req, res, next) {
             res.header("Access-Control-Allow-Origin", "*");     // Allow Origin : All
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             next();
         });
+        this.app.use(cookieParser());                           // Allow cookies
         this.app.use(bodyParser.json());                        // Allow body type : JSON
         this.app.use(bodyParser.urlencoded({ extended:true })); // Allow body type : URL-encoded
-        this.connection = mysql.createConnection(Config.MYSQL);
-        this.connection.connect(this._mysqlConnectionHandler.bind(this));
+        this.app.use(session({
+            secret          : Config.SERVER.REDIS.KEY,          // REDIS secret key
+            store           : new redisStore({
+                client : this.redisClient
+            }),
+            saveUnitialized : false,
+            resave          : false,
+            cookie: {
+                expires : false,
+                maxAge  : 24*60*60*1000 
+            }
+        }));
         this.app.listen(port, () => {
-            me._log("SERVER",'Server listening on port ' + port);
+            Log(["SERVER"],'Server listening on port ' + port);
         });
     } 
 
     _mysqlConnectionHandler(err) {
         if(err){
-            Log(["MYSQL"], "Error connecting to database : " + err);
+            Log(["SERVER","MYSQL"], "Error connecting to database : " + err);
             return null; 
         }
 
@@ -65,7 +103,7 @@ module.exports = class Server {
             }
             else {
                 req.params.user = null;
-                Log(["SERVER"],"User (" + user + ") not found. You must be logged to get matchs.");
+                Log(["SERVER", "MatchHistory"],"User (" + user + ") not found. You must be logged to get matchs.");
 
                 // TEMPS
                 req.params.user = {id: 1, name: "test", pass: "pass", summonerID: 20066789};
@@ -75,15 +113,18 @@ module.exports = class Server {
         //////
         this.app.post("/login",function(req, res) {
             res.set('Content-Type', 'application/json');
-            var loginRes = me.dataRoutes.Login(req, res, me.connection);
-            if(loginRes != 0)
-                me.clientPool.push(loginRes);
-            else 
-                Log(["LOGIN"], 'Login error');
+            me.dataRoutes.Login(req, res, me.connection, me._loginResultHandler);
         });
         this.app.get("/matchhistory/:user", function(req, res, next) {
             res.set('Content-Type', 'application/json');
             var historyRes = me.dataRoutes.getMatchHistory(req, res, me.connection, me.clientPool);
         });
+    }
+
+    _loginResultHandler(user) {
+        if(user != 0) {
+            this.clientPool.push(user);
+            Log(["SERVER", "LOGIN"], user.name.toUpperCase() + ' is now connceted.');
+        }
     }
 }

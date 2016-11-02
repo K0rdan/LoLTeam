@@ -1,13 +1,19 @@
-const API_KEY = '84437920-ce89-4491-97bd-df592330ab93';
 const PROTOCOL = 'https';
 const REGION = 'euw';
+
+var API_KEY = null;
 
 function getAPIBaseURL() { 
     return PROTOCOL + '://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/'; 
 }
 
 module.exports = {
-    API_KEY: API_KEY,
+    setAPIKey: function(api_key) {
+        API_KEY = api_key;
+    },
+    getAPIKey: function() {
+        return API_KEY;
+    },
     API: {
         PROTOCOL: PROTOCOL,
         REGION: REGION,
@@ -15,7 +21,12 @@ module.exports = {
         GAME: {
             VERSION : '1.3',
             getBaseURL: function(summonerID) { return getAPIBaseURL() + 'v' + this.VERSION + '/game/by-summoner/' + summonerID + '/'; },
-            getFullURL: function(summonerID) { return this.getBaseURL(summonerID) + 'recent?api_key=' +  API_KEY; }
+            getFullURL: function(summonerID) { 
+                if(getAPIKey() != null)
+                    return this.getBaseURL(summonerID) + 'recent?api_key=' +  getAPIKey();
+                else 
+                    return null;
+            }
         } 
     }
 };
