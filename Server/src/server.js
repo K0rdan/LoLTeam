@@ -4,40 +4,18 @@ const mysql      = require('mysql');
 const bodyParser = require('body-parser'); 
 
 // Custom Imports
-const Config     = require('./config');
+const Config     = require('./utils/config');
+const Log        = require('./utils/log');
 
 module.exports = class Server {
     constructor() {
         this.app = null;
         this.connection = null;
         this.isConnected = false;
+        this.clientPool = [];
 
         this.listen(Config.SERVER.PORT);
         this._setupRoutes();
-    }
-
-    _getDate() {
-        var date = new Date();
-        var year = date.getFullYear(),
-            month= date.getMonth()+1,
-            day  = date.getDate(), 
-            hour = date.getHours(),
-            min  = date.getMinutes(),
-            sec  = date.getSeconds();
-        month = month < 9 ? "0"+month : month;
-
-        return year + "/" + month + "/" + day + ":" + hour + "-" + min + "-" + sec;
-    }
-
-    _log(type, msg) {
-        if(type.length < 6){
-            for(var i=0; type.length<6;i++)
-                type += " ";
-        }
-        else
-            type = type.substr(0,6);
-
-        console.log("[" + this._getDate() + "][" + type.toUpperCase() + "] " + msg);
     }
 
     listen(port = Config.SERVER.PORT) {
@@ -59,7 +37,7 @@ module.exports = class Server {
 
     _mysqlConnectionHandler(err) {
         if(err){
-            this._log("MYSQL", "Error connecting to database : " + err);
+            Log(["MYSQL"], "Error connecting to database : " + err);
             return null; 
         }
 
@@ -68,13 +46,44 @@ module.exports = class Server {
 
     _setupRoutes() {
         this.dataRoutes = {
-            Login: require("./routes/login")
+            Login: require("./routes/login"),
+            getSummonerID: require("./routes/getSummonerID"),
+            getMatchHistory: require("./routes/getMatchHistory")
         };
 
         var me = this;
+        this.app.param('user', function(req, res, next, user) {
+            // Check if user is in the pool
+            var player = null;
+            for(client in me.clientPool){
+                if(client.name == user)
+                    player = client;
+            }
+            if(player != null) {
+                req.params.user = player;
+                next();
+            }
+            else {
+                req.params.user = null;
+                Log(["SERVER"],"User (" + user + ") not found. You must be logged to get matchs.");
+
+                // TEMPS
+                req.params.user = {id: 1, name: "test", pass: "pass", summonerID: 20066789};
+                next();
+            }
+        });
+        //////
         this.app.post("/login",function(req, res) {
             res.set('Content-Type', 'application/json');
-            me.dataRoutes.Login(req, res, me.connection);
+            var loginRes = me.dataRoutes.Login(req, res, me.connection);
+            if(loginRes != 0)
+                me.clientPool.push(loginRes);
+            else 
+                Log(["LOGIN"], 'Login error');
+        });
+        this.app.get("/matchhistory/:user", function(req, res, next) {
+            res.set('Content-Type', 'application/json');
+            var historyRes = me.dataRoutes.getMatchHistory(req, res, me.connection, me.clientPool);
         });
     }
 }
