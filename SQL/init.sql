@@ -203,6 +203,8 @@ INSERT INTO `roles` (`id`, `name`) VALUES
 (6, 'Tank'),
 (7, 'N/A');
 
+-- --------------------------------------------------------
+
 --
 -- Structure de la table `users`
 --
@@ -211,8 +213,16 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `name` varchar(24) NOT NULL COMMENT 'PVP.net limit',
   `pass` varchar(16) NOT NULL COMMENT 'PVP.net limit',
-  `email` varchar(254) NOT NULL COMMENT 'RFC compliance'
+  `email` varchar(254) NOT NULL COMMENT 'RFC compliance',
+  `summonerID` int(8) NOT NULL COMMENT 'PVP.net compliance'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Contenu de la table `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `pass`, `email`, `summonerID`) VALUES
+(1, 'test', 'pass', 'test@test.fr', 0);
 
 --
 -- Index pour les tables exportées
