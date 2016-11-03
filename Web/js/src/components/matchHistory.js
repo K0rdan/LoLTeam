@@ -11,6 +11,9 @@ export default class MatchHistory extends React.Component {
 
         // Init binds
         this._getMatchHistory = this._getMatchHistory.bind(this);
+    }
+
+    componentDidMount() {
         this._getMatchHistory();
     }
 
@@ -21,9 +24,8 @@ export default class MatchHistory extends React.Component {
     }
 
     _getMatchHistory() {
-        console.log("GetMatchHistory");
-        /*this.props.user.getMatchHistory(function(matchs) {
+        this.props.user.getMatchHistory(function(matchs) {
             console.log("Callback getMatchHistory", matchs);
-        });*/
+        });
     }
 };

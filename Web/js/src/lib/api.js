@@ -55,9 +55,12 @@ export default class API {
             return fetch('http://' + config.SERVER + ':' + config.PORT + '/matchhistory/' + summonerID)
             .then(function(response) {
                 if(response.ok)
-                    console.log(response.json());       
+                    return response.json();       
                 else
                     console.log('[API][MatchHistory] Wrong network answer');
+            })
+            .then(function (json) {
+                console.log(json);
             })
             .catch(function(error) {
                 console.log('[API][MatchHistory][Error] Fetch operation error : ' + error.message);
