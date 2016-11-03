@@ -32,10 +32,12 @@ module.exports = class Server {
 
         var query = "SELECT * FROM lolteam.const WHERE name=? LIMIT 1;";
         this.connection.query(query, ['RIOT_API_KEY'], function(err, row, fields) {
-            if (!err)
+            if (!err){
                 Config.RIOT.setAPIKey(row[0].value)
+                Log(["SERVER", "INIT"], "API key loaded from DB.")
+            }
             else
-                Log(["SERVER","MYSQL"], err);
+                Log(["SERVER", "INIT", "MYSQL"], err);
         });
 
         this.listen(Config.SERVER.PORT);
@@ -90,12 +92,14 @@ module.exports = class Server {
         };
 
         var me = this;
-        this.app.param('user', function(req, res, next, user) {
-            // Check if user is in the pool
+        this.app.param('summonerID', function(req, res, next, summonerID) {
+            // Check if summonerID is in the pool
             var player = null;
-            for(client in me.clientPool){
-                if(client.name == user)
-                    player = client;
+            console.log("clients", me.clientPool);
+            for(var i=0;i<me.clientPool.lenght;i++){
+                console.log(me.clientPool[i]);
+                if(me.clientPool[i].summonerID == summonerID)
+                    player = me.clientPool[i];
             }
             if(player != null) {
                 req.params.user = player;
@@ -103,7 +107,7 @@ module.exports = class Server {
             }
             else {
                 req.params.user = null;
-                Log(["SERVER", "MatchHistory"],"User (" + user + ") not found. You must be logged to get matchs.");
+                Log(["SERVER", "MatchHistory"],"Summoner (" + summonerID + ") not found. You must be logged to get matchs.");
 
                 // TEMPS
                 req.params.user = {id: 1, name: "test", pass: "pass", summonerID: 20066789};
@@ -115,7 +119,7 @@ module.exports = class Server {
             res.set('Content-Type', 'application/json');
             me.dataRoutes.Login(req, res, me.connection, me._loginResultHandler);
         });
-        this.app.get("/matchhistory/:user", function(req, res, next) {
+        this.app.get("/matchhistory/:summonerID", function(req, res, next) {
             res.set('Content-Type', 'application/json');
             var historyRes = me.dataRoutes.getMatchHistory(req, res, me.connection, me.clientPool);
         });

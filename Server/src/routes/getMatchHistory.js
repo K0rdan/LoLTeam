@@ -16,8 +16,7 @@ module.exports = function MatchHistory (req, res, mysql, clientPool) {
                 return response.json();
             })
             .then(function(json){
-                console.log(json);
-                //Log(TAGSLOG, json);
+                res.json({matchs: json});
             })
             .catch(function(error) {
                 Log(TAGSLOG, error.message);

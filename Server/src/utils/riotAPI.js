@@ -22,8 +22,8 @@ module.exports = {
             VERSION : '1.3',
             getBaseURL: function(summonerID) { return getAPIBaseURL() + 'v' + this.VERSION + '/game/by-summoner/' + summonerID + '/'; },
             getFullURL: function(summonerID) { 
-                if(getAPIKey() != null)
-                    return this.getBaseURL(summonerID) + 'recent?api_key=' +  getAPIKey();
+                if(API_KEY != null)
+                    return this.getBaseURL(summonerID) + 'recent?api_key=' + API_KEY;
                 else 
                     return null;
             }
