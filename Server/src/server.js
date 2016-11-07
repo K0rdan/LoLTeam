@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser   = require('body-parser');
 const redis        = require('redis');
 const redisStore   = require('connect-redis')(session);
+const _            = require('lodash');
 
 // Custom Imports
 const Config     = require('./utils/config');
@@ -61,11 +62,12 @@ module.exports = class Server {
         this.app.use(session({
             secret          : Config.SERVER.REDIS.KEY,          // REDIS secret key
             store           : new redisStore({
-                client : this.redisClient
+                client  : this.redisClient
             }),
             saveUnitialized : false,
             resave          : false,
             cookie: {
+
                 expires : false,
                 maxAge  : 24*60*60*1000 
             }
@@ -87,48 +89,44 @@ module.exports = class Server {
     _setupRoutes() {
         this.dataRoutes = {
             Login: require("./routes/login"),
+            Logout: require("./routes/logout"),
             getSummonerID: require("./routes/getSummonerID"),
             getMatchHistory: require("./routes/getMatchHistory")
         };
 
         var me = this;
-        this.app.param('summonerID', function(req, res, next, summonerID) {
-            // Check if summonerID is in the pool
-            var player = null;
-            console.log("clients", me.clientPool);
-            for(var i=0;i<me.clientPool.lenght;i++){
-                console.log(me.clientPool[i]);
-                if(me.clientPool[i].summonerID == summonerID)
-                    player = me.clientPool[i];
-            }
-            if(player != null) {
-                req.params.user = player;
-                next();
-            }
-            else {
-                req.params.user = null;
-                Log(["SERVER", "MatchHistory"],"Summoner (" + summonerID + ") not found. You must be logged to get matchs.");
 
-                // TEMPS
-                req.params.user = {id: 1, name: "test", pass: "pass", summonerID: 20066789};
-                next();
-            }
+        this.app.get("/", function(req, res) {
+            res.set('Content-Type', 'application/json');
+
+            // TODO : Retrieve user's data
         });
-        //////
+
+        // LOGIN
         this.app.post("/login",function(req, res) {
             res.set('Content-Type', 'application/json');
+            res.cookie('rememberme', '1', { expires: new Date(Date.now() + 60*60*24*1000), httpOnly: true });
             me.dataRoutes.Login(req, res, me.connection, me._loginResultHandler);
         });
-        this.app.get("/matchhistory/:summonerID", function(req, res, next) {
+        //
+        // LOGOUT
+        this.app.post('/logout',function(req,res){
             res.set('Content-Type', 'application/json');
-            var historyRes = me.dataRoutes.getMatchHistory(req, res, me.connection, me.clientPool);
+            me.dataRoutes.Logout(req, res, me.clientPool);
+        });
+        //
+        // MATCHHISTORY
+        this.app.get("/matchhistory/:summonerID", function(req, res) {
+            res.set('Content-Type', 'application/json');
+            me.dataRoutes.getMatchHistory(req, res, me.connection, me.clientPool);
         });
     }
 
-    _loginResultHandler(user) {
+    _loginResultHandler(user, req) {
         if(user != 0) {
+            req.session.key = user;
             this.clientPool.push(user);
-            Log(["SERVER", "LOGIN"], user.name.toUpperCase() + ' is now connceted.');
+            Log(["SERVER", "LOGIN"], user.name.toUpperCase() + ' is now connected.');
         }
     }
 }

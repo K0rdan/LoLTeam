@@ -6,7 +6,13 @@ const config = {
 
 export default class API {
     constructor() {
-        
+        // Init variables
+        this.isConnected = false;
+
+        // Init binds
+        this._restoreSession = this._restoreSession.bind(this);
+
+        this._restoreSession();
     }
 
     _isValidParameter(...params) {
@@ -14,7 +20,39 @@ export default class API {
         return true;
     }
 
+    _restoreSession() {
+        if(!this.isConnected){
+            return fetch('http://' + config.SERVER + ':' + config.PORT + '/')
+            .then(function(response) {
+                if(response.ok)
+                    return response.json();       
+                else
+                    console.log('[API][RetrieveSession] Wrong network answer');
+            })
+            .then(function (json) {
+                console.log('[API][RetrieveSession] response');
+                console.log(json);
+            })
+            .catch(function(error) {
+                console.log('[API][RetrieveSession][Error] Fetch operation error : ' + error.message);
+            });
+        }
+        else
+            console.log('[API][RetrieveSession] Already connected');
+    }
+
+    isConnected() {
+        return this.isConnected;
+    }
+
     login(username, password, callback) {
+        var me = this;
+
+        /*if(!this.connected) {
+            if(this._restoreSession())
+                return;             // If a user session is restored, we can leave the method.
+        }*/
+
         if(this._isValidParameter(username, password) && callback){
             return fetch(new Request('http://' + config.SERVER + ':' + config.PORT + '/login',{ 
                 method: 'POST',
@@ -36,6 +74,7 @@ export default class API {
             .then(function(json){
                 if(json && json.user && json.user.length == 1){
                     console.log("[API][Login] JSON : ", json);
+                    me.isConnected = true;
                     return json.user[0];
                 }
                 else {
@@ -48,10 +87,29 @@ export default class API {
                 console.log('[API][Login][Error] Fetch operation error : ' + error.message);
             });
         }
+        else 
+            console.log('[API][Login][Error] Invalid parameter.');
+    }
+
+    logout() {
+        return fetch('http://' + config.SERVER + ':' + config.PORT + '/logout')
+            .then(function(response) {
+                if(response.ok)
+                    return response.json();       
+                else
+                    console.log('[API][Logout] Wrong network answer');
+            })
+            .then(function (json) {
+                console.log('[API][Logout] response');
+                console.log(json);
+            })
+            .catch(function(error) {
+                console.log('[API][Logout][Error] Fetch operation error : ' + error.message);
+            });
     }
 
     getMatchHistory(summonerID, callback) {
-        if(this._isValidParameter(summonerID) && callback) {
+        if(this.isConnected && this._isValidParameter(summonerID) && callback) {
             return fetch('http://' + config.SERVER + ':' + config.PORT + '/matchhistory/' + summonerID)
             .then(function(response) {
                 if(response.ok)
@@ -66,5 +124,7 @@ export default class API {
                 console.log('[API][MatchHistory][Error] Fetch operation error : ' + error.message);
             });
         }
+        else 
+            console.log('[API][MatchHistory][Error] Invalid parameter, or not connected.');
     }
 };

@@ -47,4 +47,8 @@ export default class User {
             });
         }
     }
+    //
+    isConnected() {
+        return this.API.isConnected();
+    }
 };
