@@ -72,10 +72,10 @@ export default class API {
                     console.log('[API][Login] Wrong network answer');
             })
             .then(function(json){
-                if(json && json.user && json.user.length == 1){
+                if(json && json.user){
                     console.log("[API][Login] JSON : ", json);
                     me.isConnected = true;
-                    return json.user[0];
+                    return json.user;
                 }
                 else {
                     console.log("[API][Login] Problem with JSON response.");
