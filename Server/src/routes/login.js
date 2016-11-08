@@ -11,12 +11,10 @@ module.exports = function Login (req, res, mysql, callback) {
         mysql.query(query, [req.body.user, req.body.pass], function(err, row, fields) {
             if (!err) {
                 if(row[0].length != 0){
-                    res.json({status: "ok", message: "You're now connected.", user : row});
-                    callback(row[0], req);
+                    callback(req, res, row[0]);
                 }
                 else {
-                    res.json({user : row});
-                    callback(0);
+                    callback(req, res, 0);
                 }
             }
             else

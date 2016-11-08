@@ -59,7 +59,7 @@ module.exports = class Server {
         this.app.use(cookieParser());                           // Allow cookies
         this.app.use(bodyParser.json());                        // Allow body type : JSON
         this.app.use(bodyParser.urlencoded({ extended:true })); // Allow body type : URL-encoded
-        this.app.use(session({
+        /*this.app.use(session({
             secret          : Config.SERVER.REDIS.KEY,          // REDIS secret key
             store           : new redisStore({
                 client  : this.redisClient
@@ -67,11 +67,13 @@ module.exports = class Server {
             saveUnitialized : false,
             resave          : false,
             cookie: {
-
-                expires : false,
+                domain: '192.168.99.100',
+                path: '/',
+                httpOnly: true,
+                secure: false,
                 maxAge  : 24*60*60*1000 
             }
-        }));
+        }));*/
         this.app.listen(port, () => {
             Log(["SERVER"],'Server listening on port ' + port);
         });
@@ -100,13 +102,17 @@ module.exports = class Server {
             res.set('Content-Type', 'application/json');
 
             // TODO : Retrieve user's data
+            console.log(req.cookies);
         });
 
         // LOGIN
         this.app.post("/login",function(req, res) {
             res.set('Content-Type', 'application/json');
-            res.cookie('rememberme', '1', { expires: new Date(Date.now() + 60*60*24*1000), httpOnly: true });
-            me.dataRoutes.Login(req, res, me.connection, me._loginResultHandler);
+            // TODO : check session before cookie.
+            if(!req.cookies.lt_user)
+                me.dataRoutes.Login(req, res, me.connection, me._loginResultHandler);
+            else
+                res.json({status: "ok", message: "You're now connected.", user : req.cookies.lt_user});
         });
         //
         // LOGOUT
@@ -122,11 +128,16 @@ module.exports = class Server {
         });
     }
 
-    _loginResultHandler(user, req) {
+    _loginResultHandler(req, res, user) {
         if(user != 0) {
-            req.session.key = user;
+            //req.session.key = user;
+            res.cookie('lt_user', user);
+            res.json({status: "ok", message: "You're now connected.", user : user});
+
             this.clientPool.push(user);
             Log(["SERVER", "LOGIN"], user.name.toUpperCase() + ' is now connected.');
         }
+        else
+            res.json({status: "ko", message: "Identifiants invalid."});
     }
 }
