@@ -57,9 +57,11 @@ export default class API {
             return fetch(new Request('http://' + config.SERVER + ':' + config.PORT + '/login',{ 
                 method: 'POST',
                 headers: new Headers({
-                    "Content-Type": "application/json"
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
                 }),
                 mode: 'cors',
+                credentials: 'include',
                 body: JSON.stringify({
                     user: encodeURIComponent(username),
                     pass: encodeURIComponent(password),
