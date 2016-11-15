@@ -52,8 +52,10 @@ module.exports = class Server {
         this.app.disable('x-powered-by');
         // Allowances
         this.app.use(function(req, res, next) {
-            res.header("Access-Control-Allow-Origin", "*");     // Allow Origin : All
+            res.header("Access-Control-Allow-Origin", Config.SERVER.DOMAIN);     // Allow Origin : All
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+            res.header("Access-Control-Allow-Credentials", "true");
             next();
         });
         this.app.use(cookieParser());                           // Allow cookies
@@ -103,6 +105,8 @@ module.exports = class Server {
 
             // TODO : Retrieve user's data
             console.log(req.cookies);
+
+            res.json({status: "ok", message: req.cookies});
         });
 
         // LOGIN
@@ -131,7 +135,12 @@ module.exports = class Server {
     _loginResultHandler(req, res, user) {
         if(user != 0) {
             //req.session.key = user;
-            res.cookie('lt_user', user);
+            res.cookie('lt_user', user, {
+                domain: 'server',
+                path: '/',
+                httpOnly: false,
+                expires: new Date(Date.now() + 24*60*60*1000)
+            });
             res.json({status: "ok", message: "You're now connected.", user : user});
 
             this.clientPool.push(user);

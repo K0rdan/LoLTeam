@@ -2,7 +2,8 @@ const RIOTAPI = require('./riotAPI');
 
 module.exports = {
     SERVER: {
-        PORT: 8000,      
+        DOMAIN: 'http://server',
+        PORT: 8000,
         REDIS: {
             KEY : 'secret',
             HOST: 'lolteam-sessions',
