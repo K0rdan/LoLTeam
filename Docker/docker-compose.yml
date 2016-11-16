@@ -63,3 +63,11 @@ services:
         environment:
             # Environment variables preceed by REDIS_
             - REDIS_PORT=${REDIS_PORT}
+
+    client:
+        image: httpd:alpine
+        container_name: lolteam-client
+        ports: 
+            - "80:80"
+        volumes:
+            - ./../Web:/usr/local/apache2/htdocs/
