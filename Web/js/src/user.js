@@ -8,6 +8,9 @@ export default class User {
         this.email = null;
         this.summonerID = null;
         this.matchs = null;
+
+        // Init binds
+        this._loginResponseHandler = this._loginResponseHandler.bind(this);
     }
 
     getId() {
@@ -35,6 +38,7 @@ export default class User {
             this.name = user.name;
             this.email = user.email;
             this.summonerID = user.summonerID;
+            console.log(this);
         }
     }
     //
