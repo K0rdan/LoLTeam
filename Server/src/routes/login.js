@@ -10,7 +10,7 @@ module.exports = function Login (req, res, mysql, callback) {
         var query = "SELECT `id`,`name`,`email`,`summonerID` FROM lolteam.`users` WHERE `name`=? AND `pass`=? LIMIT 1;";
         mysql.query(query, [req.body.user, req.body.pass], function(err, row, fields) {
             if (!err) {
-                if(row[0].length != 0){
+                if(row[0] && row[0].length != 0){
                     callback(req, res, row[0]);
                 }
                 else {

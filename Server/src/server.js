@@ -69,10 +69,9 @@ module.exports = class Server {
             saveUnitialized : false,
             resave          : false,
             cookie: {
-                domain: '192.168.99.100',
+                domain: 'server',
                 path: '/',
                 httpOnly: true,
-                secure: false,
                 maxAge  : 24*60*60*1000 
             }
         }));*/
@@ -135,18 +134,13 @@ module.exports = class Server {
     _loginResultHandler(req, res, user) {
         if(user != 0) {
             //req.session.key = user;
-            res.cookie('lt_user', user, {
-                domain: 'server',
-                path: '/',
-                httpOnly: false,
-                expires: new Date(Date.now() + 24*60*60*1000)
-            });
+            res.cookie('lt_user', user);
             res.json({status: "ok", message: "You're now connected.", user : user});
 
             this.clientPool.push(user);
             Log(["SERVER", "LOGIN"], user.name.toUpperCase() + ' is now connected.');
         }
         else
-            res.json({status: "ko", message: "Identifiants invalid."});
+            res.json({status: "ko", message: "Unknown user or identifiants invalid."});
     }
 }
