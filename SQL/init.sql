@@ -224,6 +224,25 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `name`, `pass`, `email`, `summonerID`) VALUES
 (1, 'test', 'pass', 'test@test.fr', 0);
 
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `const`
+--
+
+CREATE TABLE `const` (
+  `id` int(11) NOT NULL,
+  `name` text NOT NULL,
+  `value` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Contenu de la table `const`
+--
+
+INSERT INTO `const` (`id`, `name`, `value`) VALUES
+(1, 'RIOT_API_KEY', '');
+
 --
 -- Index pour les tables exportées
 --
@@ -263,6 +282,12 @@ ALTER TABLE `roles`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Index pour la table `const`
+--
+ALTER TABLE `const`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -271,6 +296,13 @@ ALTER TABLE `roles`
 --
 ALTER TABLE `champions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
+
+--
+-- AUTO_INCREMENT pour la table `const`
+--
+ALTER TABLE `const`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
 --
 -- Constraints for dumped tables
 --
