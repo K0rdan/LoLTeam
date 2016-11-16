@@ -8,6 +8,10 @@ export default class API {
     constructor() {
         // Init variables
         this.isConnected = false;
+        this.requestHeaders = new Headers({
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        });
 
         // Init binds
         this._restoreSession = this._restoreSession.bind(this);
@@ -41,6 +45,10 @@ export default class API {
             console.log('[API][RetrieveSession] Already connected');
     }
 
+    _error(method, message) {
+        console.log("[API][" + method + "][Error] " + message + ".");
+    }
+
     isConnected() {
         return this.isConnected;
     }
@@ -56,10 +64,7 @@ export default class API {
         if(this._isValidParameter(username, password) && callback){
             return fetch(new Request('http://' + config.SERVER + ':' + config.PORT + '/login',{ 
                 method: 'POST',
-                headers: new Headers({
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                }),
+                headers: this.requestHeaders,
                 mode: 'cors',
                 credentials: 'include',
                 body: JSON.stringify({
@@ -69,9 +74,9 @@ export default class API {
             }))
             .then(function(response) {
                 if(response.ok)
-                    return response.json();       
-                else
-                    console.log('[API][Login] Wrong network answer');
+                    return response.json();
+                
+                me._error("Login", "Wrong network answer");
             })
             .then(function(json){
                 if(json && json.user){
@@ -80,17 +85,21 @@ export default class API {
                     return json.user;
                 }
                 else {
-                    console.log("[API][Login] Problem with JSON response.");
+                    if(json.status == "ko")
+                        me._error("Login", json.message);
+                    else
+                        me._error("Login", "Problem with JSON response");
+                        
                     return null;
                 }
             })
             .then(callback)
             .catch(function(error) {
-                console.log('[API][Login][Error] Fetch operation error : ' + error.message);
+                me._error("Login","Fetch operation error : " + error.message);
             });
         }
         else 
-            console.log('[API][Login][Error] Invalid parameter.');
+            me._error("Login","Invalid parameter");
     }
 
     logout() {
