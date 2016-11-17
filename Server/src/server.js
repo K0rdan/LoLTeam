@@ -61,20 +61,20 @@ module.exports = class Server {
         this.app.use(cookieParser());                           // Allow cookies
         this.app.use(bodyParser.json());                        // Allow body type : JSON
         this.app.use(bodyParser.urlencoded({ extended:true })); // Allow body type : URL-encoded
-        /*this.app.use(session({
+        this.app.use(session({
             secret          : Config.SERVER.REDIS.KEY,          // REDIS secret key
             store           : new redisStore({
-                client  : this.redisClient
+                client  : this.redisClient                      // REDIS parameters
             }),
-            saveUnitialized : false,
-            resave          : false,
+            saveUnitialized : false,                            // No session for unauthorized users
+            resave          : false,                            // Disable unmodified session saving
             cookie: {
                 domain: 'server',
                 path: '/',
                 httpOnly: true,
                 maxAge  : 24*60*60*1000 
             }
-        }));*/
+        }));
         this.app.listen(port, () => {
             Log(["SERVER"],'Server listening on port ' + port);
         });
@@ -102,11 +102,15 @@ module.exports = class Server {
         this.app.get("/", function(req, res) {
             res.set('Content-Type', 'application/json');
 
+            // TEMP
+            console.log(req.session);
+
             if(req.cookies && req.cookies.lt_user) {
                 res.json({status: "ok", message: "You're now connected.", user : req.cookies.lt_user});
             }
-
-            res.json({status: "ok", message: req.cookies});
+            else {
+                res.json({status: "ko", message: "No session"});
+            }
         });
 
         // LOGIN
