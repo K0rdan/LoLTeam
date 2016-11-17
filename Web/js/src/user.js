@@ -1,3 +1,6 @@
+// Lib imports
+import Log from './utils/log';
+
 export default class User {
     constructor(API) {
         // Init vars
@@ -9,8 +12,17 @@ export default class User {
         this.summonerID = null;
         this.matchs = null;
 
+        this.logParams = {
+            component: "User",
+            options: {
+                timestamp: true
+            }
+        };
+
         // Init binds
+        this._log = this._log.bind(this);
         this._loginResponseHandler = this._loginResponseHandler.bind(this);
+        this._restoreSessionResponseHandler = this._restoreSessionResponseHandler.bind(this);
     }
 
     getId() {
@@ -23,6 +35,21 @@ export default class User {
         return this.summonerID;
     }
 
+    _log(method, msg) {
+        new Log(this.logParams.component, method, msg, this.logParams.options);
+    }
+
+    // RESTORE SESSION
+    restoreSession(callback) {
+        var me = this;
+        this.API.restoreSession(function(user) {
+            me._restoreSessionResponseHandler(user);
+            if(callback)
+                callback();
+        });
+    }
+    _restoreSessionResponseHandler(user) { this._loginResponseHandler(user); }
+    //
     // LOGIN
     login(username, password, callback) {
         var me = this;
@@ -33,13 +60,14 @@ export default class User {
         });
     }
     _loginResponseHandler(user) {
-        if(user && user.id && user.name && user.email && user.summonerID){
+        if(user && user.id && user.name && user.email && user.summonerID && user.summonerID != 0){
             this.id = user.id;
             this.name = user.name;
             this.email = user.email;
             this.summonerID = user.summonerID;
-            console.log(this);
         }
+        else
+            this._log("Login","Invalid or missing parameter in login response");
     }
     //
     // MATCH HISTORY

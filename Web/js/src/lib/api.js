@@ -1,5 +1,7 @@
+import Log from "./../utils/log";
+
 const config = {
-    SERVER: 'server',
+    SERVER: "server",
     PORT: 8000,
     TIMEOUT: 10000
 };
@@ -13,10 +15,23 @@ export default class API {
             "Content-Type": "application/json",
         });
 
-        // Init binds
-        this._restoreSession = this._restoreSession.bind(this);
+        this.logParams = {
+            component: "API",
+            options: {
+                timestamp: true
+            }
+        };
 
-        this._restoreSession();
+        // Init binds
+        this._log = this._log.bind(this);
+        this.restoreSession = this.restoreSession.bind(this);
+    }
+
+    _log(method, msg) {
+        new Log(this.logParams.component, method, msg, this.logParams.options);
+    }
+    _error(method, message) {
+        this._log(method, "[Error] " + message);
     }
 
     _isValidParameter(...params) {
@@ -24,29 +39,33 @@ export default class API {
         return true;
     }
 
-    _restoreSession() {
+    restoreSession(callback) {
+        var me = this;
         if(!this.isConnected){
-            return fetch('http://' + config.SERVER + ':' + config.PORT + '/')
+            return fetch(
+            new Request('http://' + config.SERVER + ':' + config.PORT + '/',{ 
+                method: "GET",
+                headers: this.requestHeaders,
+                mode: "cors",
+                credentials: "include"
+            }))
             .then(function(response) {
                 if(response.ok)
                     return response.json();       
                 else
-                    console.log('[API][RetrieveSession] Wrong network answer');
+                    me._error("RestoreSession", "Wrong network answer");
             })
             .then(function (json) {
-                console.log('[API][RetrieveSession] response');
-                console.log(json);
+                me.isConnected = true;
+                return json.user;
             })
+            .then(callback)
             .catch(function(error) {
-                console.log('[API][RetrieveSession][Error] Fetch operation error : ' + error.message);
+                me._error("RestoreSession", "Fetch operation error : " + error.message);
             });
         }
         else
-            console.log('[API][RetrieveSession] Already connected');
-    }
-
-    _error(method, message) {
-        console.log("[API][" + method + "][Error] " + message + ".");
+            this._log("RestoreSession", "Already connected");
     }
 
     isConnected() {
@@ -56,17 +75,12 @@ export default class API {
     login(username, password, callback) {
         var me = this;
 
-        /*if(!this.connected) {
-            if(this._restoreSession())
-                return;             // If a user session is restored, we can leave the method.
-        }*/
-
         if(this._isValidParameter(username, password) && callback){
             return fetch(new Request('http://' + config.SERVER + ':' + config.PORT + '/login',{ 
-                method: 'POST',
+                method: "POST",
                 headers: this.requestHeaders,
-                mode: 'cors',
-                credentials: 'include',
+                mode: "cors",
+                credentials: "include",
                 body: JSON.stringify({
                     user: encodeURIComponent(username),
                     pass: encodeURIComponent(password),
@@ -80,7 +94,6 @@ export default class API {
             })
             .then(function(json){
                 if(json && json.user){
-                    console.log("[API][Login] JSON : ", json);
                     me.isConnected = true;
                     return json.user;
                 }
