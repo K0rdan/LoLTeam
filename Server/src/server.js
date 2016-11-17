@@ -102,8 +102,9 @@ module.exports = class Server {
         this.app.get("/", function(req, res) {
             res.set('Content-Type', 'application/json');
 
-            // TODO : Retrieve user's data
-            console.log(req.cookies);
+            if(req.cookies && req.cookies.lt_user) {
+                res.json({status: "ok", message: "You're now connected.", user : req.cookies.lt_user});
+            }
 
             res.json({status: "ok", message: req.cookies});
         });
