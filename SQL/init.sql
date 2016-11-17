@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.1
--- http://www.phpmyadmin.net
+-- version 4.6.4
+-- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Apr 14, 2016 at 01:14 PM
--- Server version: 5.5.47-MariaDB
--- PHP Version: 5.6.15
+-- Client :  db
+-- Généré le :  Jeu 17 Novembre 2016 à 17:52
+-- Version du serveur :  5.7.16
+-- Version de PHP :  5.6.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -17,13 +17,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `lolstats`
+-- Base de données :  `lolteam`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `champions`
+-- Structure de la table `champions`
 --
 
 CREATE TABLE `champions` (
@@ -36,7 +36,7 @@ CREATE TABLE `champions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `champions`
+-- Contenu de la table `champions`
 --
 
 INSERT INTO `champions` (`id`, `staticID`, `name`, `nameKR`, `role1`, `role2`) VALUES
@@ -54,7 +54,7 @@ INSERT INTO `champions` (`id`, `staticID`, `name`, `nameKR`, `role1`, `role2`) V
 (12, 201, 'Braum', '브라움', 5, 6),
 (13, 51, 'Caitlyn', '케이틀린', 4, 7),
 (14, 69, 'Cassiopeia', '카시오페아', 3, 7),
-(15, 31, 'Cho''Gath', '초가스', 6, 3),
+(15, 31, 'Cho\'Gath', '초가스', 6, 3),
 (16, 42, 'Corki', '코르키', 4, 7),
 (17, 122, 'Darius', '다리우스', 2, 6),
 (18, 131, 'Diana', '다이애나', 2, 3),
@@ -86,8 +86,8 @@ INSERT INTO `champions` (`id`, `staticID`, `name`, `nameKR`, `role1`, `role2`) V
 (44, 55, 'Katarina', '카타리나', 1, 3),
 (45, 10, 'Kayle', '케일', 2, 5),
 (46, 85, 'Kennen', '케넨', 3, 4),
-(47, 121, 'Kha''Zix', '카직스', 1, 2),
-(48, 96, 'Kog''Maw', '코그모', 4, 3),
+(47, 121, 'Kha\'Zix', '카직스', 1, 2),
+(48, 96, 'Kog\'Maw', '코그모', 4, 3),
 (49, 7, 'LeBlanc', '르블랑', 1, 3),
 (50, 64, 'Lee Sin', '리 신', 2, 1),
 (51, 89, 'Leona', '레오나', 6, 5),
@@ -145,7 +145,7 @@ INSERT INTO `champions` (`id`, `staticID`, `name`, `nameKR`, `role1`, `role2`) V
 (103, 110, 'Varus', '우르곳', 4, 3),
 (104, 67, 'Vayne', '바루스', 4, 1),
 (105, 45, 'Veigar', '베인', 3, 7),
-(106, 161, 'Vel''Koz', '베이가', 3, 7),
+(106, 161, 'Vel\'Koz', '베이가', 3, 7),
 (107, 254, 'Vi', '벨코즈', 2, 1),
 (108, 112, 'Viktor', '바이', 3, 7),
 (109, 8, 'Vladimir', '빅토르', 3, 6),
@@ -165,7 +165,19 @@ INSERT INTO `champions` (`id`, `staticID`, `name`, `nameKR`, `role1`, `role2`) V
 -- --------------------------------------------------------
 
 --
--- Table structure for table `lastQuery`
+-- Structure de la table `const`
+--
+
+CREATE TABLE `const` (
+  `id` int(11) NOT NULL,
+  `name` text NOT NULL,
+  `value` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `lastQuery`
 --
 
 CREATE TABLE `lastQuery` (
@@ -173,7 +185,7 @@ CREATE TABLE `lastQuery` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `lastQuery`
+-- Contenu de la table `lastQuery`
 --
 
 INSERT INTO `lastQuery` (`date`) VALUES
@@ -182,7 +194,51 @@ INSERT INTO `lastQuery` (`date`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `roles`
+-- Structure de la table `leagues`
+--
+
+CREATE TABLE `leagues` (
+  `id` int(11) NOT NULL,
+  `name` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Contenu de la table `leagues`
+--
+
+INSERT INTO `leagues` (`id`, `name`) VALUES
+(1, 'BRONZE 5'),
+(2, 'BRONZE 4'),
+(3, 'BRONZE 3'),
+(4, 'BRONZE 2'),
+(5, 'BRONZE 1'),
+(6, 'SILVER 5'),
+(7, 'SILVER 4'),
+(8, 'SILVER 3'),
+(9, 'SILVER 2'),
+(10, 'SILVER 1'),
+(11, 'GOLD 5'),
+(12, 'GOLD 4'),
+(13, 'GOLD 3'),
+(14, 'GOLD 2'),
+(15, 'GOLD 1'),
+(16, 'PLATINUM 5'),
+(17, 'PLATINUM 4'),
+(18, 'PLATINUM 3'),
+(19, 'PLATINUM 2'),
+(20, 'PLATINUM 1'),
+(21, 'DIAMOND 5'),
+(22, 'DIAMOND 4'),
+(23, 'DIAMOND 3'),
+(24, 'DIAMOND 2'),
+(25, 'DIAMOND 1'),
+(26, 'MASTER'),
+(27, 'CHALLENGER');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `roles`
 --
 
 CREATE TABLE `roles` (
@@ -191,7 +247,7 @@ CREATE TABLE `roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `roles`
+-- Contenu de la table `roles`
 --
 
 INSERT INTO `roles` (`id`, `name`) VALUES
@@ -202,6 +258,29 @@ INSERT INTO `roles` (`id`, `name`) VALUES
 (5, 'Support'),
 (6, 'Tank'),
 (7, 'N/A');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `teams`
+--
+
+CREATE TABLE `teams` (
+  `id` int(11) NOT NULL,
+  `teamID` varchar(41) NOT NULL,
+  `name` varchar(24) NOT NULL COMMENT 'PVP.net limit',
+  `tag` varchar(6) NOT NULL COMMENT 'PVP.net limit',
+  `league` int(11) NOT NULL DEFAULT '0',
+  `wins` int(11) NOT NULL DEFAULT '0',
+  `looses` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Contenu de la table `teams`
+--
+
+INSERT INTO `teams` (`id`, `teamID`, `name`, `tag`, `league`, `wins`, `looses`) VALUES
+(1, 'TEAM-e59df190-3e2e-11e6-b377-c81f66dd7106', 'Blood Is All', 'BLOOIA', 6, 24, 27);
 
 -- --------------------------------------------------------
 
@@ -222,64 +301,39 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `pass`, `email`, `summonerID`) VALUES
-(1, 'test', 'pass', 'test@test.fr', 0);
+(1, 'test', 'pass', 'test@test.fr', 0),
+(2, '0Kordan0', 'pass', 'test@test.fr', 20066789);
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `const`
+-- Structure de la table `user_teams`
 --
 
-CREATE TABLE `const` (
+CREATE TABLE `user_teams` (
   `id` int(11) NOT NULL,
-  `name` text NOT NULL,
-  `value` text NOT NULL
+  `userID` int(11) NOT NULL,
+  `teamID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Contenu de la table `const`
+-- Contenu de la table `user_teams`
 --
 
-INSERT INTO `const` (`id`, `name`, `value`) VALUES
-(1, 'RIOT_API_KEY', '');
+INSERT INTO `user_teams` (`id`, `userID`, `teamID`) VALUES
+(1, 2, 1);
 
 --
 -- Index pour les tables exportées
 --
 
 --
--- Index pour la table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT pour les tables exportées
---
-
---
--- AUTO_INCREMENT pour la table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `champions`
+-- Index pour la table `champions`
 --
 ALTER TABLE `champions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `role1` (`role1`),
   ADD KEY `role2` (`role2`);
-
---
--- Indexes for table `roles`
---
-ALTER TABLE `roles`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Index pour la table `const`
@@ -288,31 +342,96 @@ ALTER TABLE `const`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- Index pour la table `leagues`
+--
+ALTER TABLE `leagues`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id` (`id`);
+
+--
+-- Index pour la table `roles`
+--
+ALTER TABLE `roles`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Index pour la table `teams`
+--
+ALTER TABLE `teams`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `league` (`league`);
+
+--
+-- Index pour la table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Index pour la table `user_teams`
+--
+ALTER TABLE `user_teams`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `userID` (`userID`),
+  ADD KEY `teamID` (`teamID`);
+
+--
+-- AUTO_INCREMENT pour les tables exportées
 --
 
 --
--- AUTO_INCREMENT for table `champions`
+-- AUTO_INCREMENT pour la table `champions`
 --
 ALTER TABLE `champions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
-
 --
 -- AUTO_INCREMENT pour la table `const`
 --
 ALTER TABLE `const`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+--
+-- AUTO_INCREMENT pour la table `leagues`
+--
+ALTER TABLE `leagues`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+--
+-- AUTO_INCREMENT pour la table `teams`
+--
+ALTER TABLE `teams`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+--
+-- AUTO_INCREMENT pour la table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+--
+-- AUTO_INCREMENT pour la table `user_teams`
+--
+ALTER TABLE `user_teams`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+--
+-- Contraintes pour les tables exportées
+--
 
 --
--- Constraints for dumped tables
---
-
---
--- Constraints for table `champions`
+-- Contraintes pour la table `champions`
 --
 ALTER TABLE `champions`
   ADD CONSTRAINT `fk_champions_role` FOREIGN KEY (`role1`) REFERENCES `roles` (`id`),
   ADD CONSTRAINT `fk_champions_role2` FOREIGN KEY (`role2`) REFERENCES `roles` (`id`);
+
+--
+-- Contraintes pour la table `teams`
+--
+ALTER TABLE `teams`
+  ADD CONSTRAINT `teams_ibfk_1` FOREIGN KEY (`league`) REFERENCES `leagues` (`id`);
+
+--
+-- Contraintes pour la table `user_teams`
+--
+ALTER TABLE `user_teams`
+  ADD CONSTRAINT `user_teams_ibfk_1` FOREIGN KEY (`teamID`) REFERENCES `teams` (`id`),
+  ADD CONSTRAINT `user_teams_ibfk_2` FOREIGN KEY (`userID`) REFERENCES `users` (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
