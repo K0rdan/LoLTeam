@@ -134,21 +134,22 @@ export default class API {
 
     getMatchHistory(summonerID, callback) {
         if(this.isConnected && this._isValidParameter(summonerID) && callback) {
+            var me = this;
             return fetch('http://' + config.SERVER + ':' + config.PORT + '/matchhistory/' + summonerID)
             .then(function(response) {
                 if(response.ok)
                     return response.json();       
                 else
-                    console.log('[API][MatchHistory] Wrong network answer');
+                    me._error("MatchHistory", "Wrong network answer");
             })
             .then(function (json) {
-                console.log(json);
+                me._log(json);
             })
             .catch(function(error) {
-                console.log('[API][MatchHistory][Error] Fetch operation error : ' + error.message);
+                me._error("MatchHistory", "Fetch operation error : " + error.message);
             });
         }
         else 
-            console.log('[API][MatchHistory][Error] Invalid parameter, or not connected.');
+            this._error("MatchHistory", "Invalid parameter, or not connected.");
     }
 };
