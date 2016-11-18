@@ -12,6 +12,12 @@ const _            = require('lodash');
 const Config     = require('./utils/config');
 const Log        = require('./utils/log');
 
+// NOTES :
+//  Each route return a JSON response to the client.
+//  The JSON response always have a 'status' property. Which can have 'ok' or 'ko' value.
+//      - OK : is associate to a 'result' property with the Object or String response.
+//      - KO : is associate to a 'error' property a String describing the problem.
+
 module.exports = class Server {
     constructor() {
         this.app = null;
@@ -93,15 +99,19 @@ module.exports = class Server {
         this.dataRoutes = {
             Login: require("./routes/login"),
             Logout: require("./routes/logout"),
+            getTeamsList: require("./routes/getTeamsList"),
             getSummonerID: require("./routes/getSummonerID"),
             getMatchHistory: require("./routes/getMatchHistory")
         };
 
         var me = this;
 
-        this.app.get("/", function(req, res) {
+        this.app.all('*', function(req, res, next) {
             res.set('Content-Type', 'application/json');
+            next();
+        });
 
+        this.app.get("/", function(req, res) {
             // TEMP
             console.log(req.session);
 
@@ -115,7 +125,6 @@ module.exports = class Server {
 
         // LOGIN
         this.app.post("/login",function(req, res) {
-            res.set('Content-Type', 'application/json');
             // TODO : check session before cookie.
             if(!req.cookies.lt_user)
                 me.dataRoutes.Login(req, res, me.connection, me._loginResultHandler);
@@ -124,14 +133,20 @@ module.exports = class Server {
         });
         //
         // LOGOUT
-        this.app.post('/logout',function(req,res){
-            res.set('Content-Type', 'application/json');
+        this.app.post("/logout",function(req,res){
             me.dataRoutes.Logout(req, res, me.clientPool);
         });
         //
-        // MATCHHISTORY
+        // TEAMS LIST
+        this.app.get("/teamslist", function(req,res) {
+            me.dataRoutes.getTeamsList(req, res, me.connection);
+        });
+        this.app.get("/teamslist/:userID?", function(req, res) {
+            me.dataRoutes.getTeamsList(req, res, me.connection);
+        });
+        //
+        // MATCH HISTORY
         this.app.get("/matchhistory/:summonerID", function(req, res) {
-            res.set('Content-Type', 'application/json');
             me.dataRoutes.getMatchHistory(req, res, me.connection, me.clientPool);
         });
     }
