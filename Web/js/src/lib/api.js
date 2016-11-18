@@ -132,6 +132,27 @@ export default class API {
             });
     }
 
+    getTeamsList(userID, callback) {
+        if(this.isConnected && this._isValidParameter(userID) && callback) {
+            var me = this;
+            return fetch('http://' + config.SERVER + ':' + config.PORT + '/teamslist/' + userID)
+            .then(function(response) {
+                if(response.ok)
+                    return response.json();
+                else
+                    me._error("TeamsList", "Wrong network answer");
+            })
+            .then(function(json) {
+                callback(json.result);
+            })
+            .catch(function(error) {
+                me._error("TeamsList", "Fetch operation error : " + error.message);
+            });
+        }
+        else 
+            this._error("TeamsList", "Invalid parameter, or not connected.");
+    }
+
     getMatchHistory(summonerID, callback) {
         if(this.isConnected && this._isValidParameter(summonerID) && callback) {
             var me = this;

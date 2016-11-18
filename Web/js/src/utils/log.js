@@ -40,7 +40,7 @@ export default class Log {
         // Component tag
         logStr += "[" + component + "]";
         // Method tag
-        logStr += "[" + (method.charAt(0).toUpperCase() + method.slice(1)) + "]";
+        logStr += "[" + (method[0].toUpperCase() + method.slice(1)) + "]";
 
         console.log(logStr + " " + msg);
     }

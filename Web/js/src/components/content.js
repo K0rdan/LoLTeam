@@ -3,7 +3,7 @@ import React from 'react';
 
 // Custom imports
 import Login from './login';
-import MatchHistory from './matchHistory';
+import Teams from './teams/teams';
 
 var style = {
     container: {}
@@ -41,7 +41,7 @@ export default class Content extends React.Component {
         if(this.state.connected)
             return (<div id="content" style={style.container}>
                 Content
-                <MatchHistory user={this.props.user} />
+                <Teams user={this.props.user} />
             </div>);
         else
             return (<div id="content" style={style.container}><Login user={this.props.user} onLogin={this._onLogin}/></div>);

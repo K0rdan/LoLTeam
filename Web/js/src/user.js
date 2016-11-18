@@ -70,6 +70,17 @@ export default class User {
             this._log("Login","Invalid or missing parameter in login response");
     }
     //
+    // TEAMS LIST
+    getTeamsList(callback) {
+        if(this.id != null) {
+            var me = this;
+            this.API.getTeamsList(this.id, function(teams) {
+                if(callback)
+                    callback(teams);
+            });
+        }
+    }
+    //
     // MATCH HISTORY
     getMatchHistory(callback) {
         if(this.summonerID != null) {
