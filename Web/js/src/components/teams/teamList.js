@@ -1,7 +1,7 @@
 // Lib imports
 import React from 'react';
 
-export default class Teams extends React.Component {
+export default class TeamList extends React.Component {
     constructor(props) {
         super(props);
 
@@ -15,15 +15,12 @@ export default class Teams extends React.Component {
     render() {
         return (<ul>
             {this.state && this.state.teams ? 
-                this._displayTeams(teams) : null}
+                this.state.teams.map(function(team, i) {
+                    return (<li key={i}>
+                        {team.name}
+                    </li>);
+                }) : null}
         </ul>);    
-    }
-
-    _displayTeams(teams) {
-        
-        for(var i=0; i<teams.length();i++) {
-            
-        }
     }
 
     _getTeamsList() {

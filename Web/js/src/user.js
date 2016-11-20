@@ -43,7 +43,8 @@ export default class User {
     restoreSession(callback) {
         var me = this;
         this.API.restoreSession(function(user) {
-            me._restoreSessionResponseHandler(user);
+            if(user != null)
+                me._restoreSessionResponseHandler(user);
             if(callback)
                 callback();
         });

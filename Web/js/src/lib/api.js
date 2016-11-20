@@ -56,8 +56,12 @@ export default class API {
                     me._error("RestoreSession", "Wrong network answer");
             })
             .then(function (json) {
-                me.isConnected = true;
-                return json.user;
+                if(json.status == "ok"){
+                    me.isConnected = true;
+                    return json.user;
+                }
+                else 
+                    return null;
             })
             .then(callback)
             .catch(function(error) {
