@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Client :  db
--- Généré le :  Jeu 17 Novembre 2016 à 17:52
+-- Généré le :  Dim 20 Novembre 2016 à 22:45
 -- Version du serveur :  5.7.16
 -- Version de PHP :  5.6.26
 
@@ -238,6 +238,21 @@ INSERT INTO `leagues` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `matchs`
+--
+
+CREATE TABLE `matchs` (
+  `id` int(11) NOT NULL,
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `matchID` int(11) NOT NULL,
+  `duration` int(11) NOT NULL,
+  `team1` int(11) NOT NULL,
+  `team2` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `roles`
 --
 
@@ -272,15 +287,37 @@ CREATE TABLE `teams` (
   `tag` varchar(6) NOT NULL COMMENT 'PVP.net limit',
   `league` int(11) NOT NULL DEFAULT '0',
   `wins` int(11) NOT NULL DEFAULT '0',
-  `looses` int(11) NOT NULL DEFAULT '0'
+  `looses` int(11) NOT NULL DEFAULT '0',
+  `lastUpdate` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Contenu de la table `teams`
 --
 
-INSERT INTO `teams` (`id`, `teamID`, `name`, `tag`, `league`, `wins`, `looses`) VALUES
-(1, 'TEAM-e59df190-3e2e-11e6-b377-c81f66dd7106', 'Blood Is All', 'BLOOIA', 6, 24, 27);
+INSERT INTO `teams` (`id`, `teamID`, `name`, `tag`, `league`, `wins`, `looses`, `lastUpdate`) VALUES
+(1, 'TEAM-e59df190-3e2e-11e6-b377-c81f66dd7106', 'Blood Is All', 'BLOOIA', 6, 24, 27, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `team_matchs`
+--
+
+CREATE TABLE `team_matchs` (
+  `id` int(11) NOT NULL,
+  `teamID` int(11) NOT NULL,
+  `matchID` int(11) NOT NULL,
+  `win` tinyint(1) NOT NULL,
+  `firstTower` tinyint(1) NOT NULL,
+  `towerKills` int(11) NOT NULL,
+  `inhibitorKills` int(11) NOT NULL,
+  `dragonKills` int(11) NOT NULL,
+  `baronKills` int(11) NOT NULL,
+  `ban1` int(11) NOT NULL,
+  `ban2` int(11) NOT NULL,
+  `ban3` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -303,6 +340,31 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `name`, `pass`, `email`, `summonerID`) VALUES
 (1, 'test', 'pass', 'test@test.fr', 0),
 (2, '0Kordan0', 'pass', 'test@test.fr', 20066789);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `user_matchs`
+--
+
+CREATE TABLE `user_matchs` (
+  `id` int(11) NOT NULL,
+  `userID` int(11) NOT NULL,
+  `matchID` int(11) NOT NULL,
+  `champion` int(11) NOT NULL,
+  `win` tinyint(1) NOT NULL,
+  `kills` int(11) NOT NULL,
+  `deaths` int(11) NOT NULL,
+  `assists` int(11) NOT NULL,
+  `totalDamageDealtToChampions` int(11) NOT NULL,
+  `totalDamageTaken` int(11) NOT NULL,
+  `minionsKilled` int(11) NOT NULL,
+  `neutralMinionsKilled` int(11) NOT NULL,
+  `gold` int(11) NOT NULL,
+  `visionWards` int(11) NOT NULL,
+  `wardsPlaced` int(11) NOT NULL,
+  `wardsKilled` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -349,6 +411,13 @@ ALTER TABLE `leagues`
   ADD KEY `id` (`id`);
 
 --
+-- Index pour la table `matchs`
+--
+ALTER TABLE `matchs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id` (`id`);
+
+--
 -- Index pour la table `roles`
 --
 ALTER TABLE `roles`
@@ -362,10 +431,26 @@ ALTER TABLE `teams`
   ADD KEY `league` (`league`);
 
 --
+-- Index pour la table `team_matchs`
+--
+ALTER TABLE `team_matchs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `matchID` (`matchID`),
+  ADD KEY `teamID` (`teamID`);
+
+--
 -- Index pour la table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Index pour la table `user_matchs`
+--
+ALTER TABLE `user_matchs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `userID` (`userID`),
+  ADD KEY `matchID` (`matchID`);
 
 --
 -- Index pour la table `user_teams`
@@ -388,22 +473,37 @@ ALTER TABLE `champions`
 -- AUTO_INCREMENT pour la table `const`
 --
 ALTER TABLE `const`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
 -- AUTO_INCREMENT pour la table `leagues`
 --
 ALTER TABLE `leagues`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 --
+-- AUTO_INCREMENT pour la table `matchs`
+--
+ALTER TABLE `matchs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT pour la table `teams`
 --
 ALTER TABLE `teams`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
+-- AUTO_INCREMENT pour la table `team_matchs`
+--
+ALTER TABLE `team_matchs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+--
+-- AUTO_INCREMENT pour la table `user_matchs`
+--
+ALTER TABLE `user_matchs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT pour la table `user_teams`
 --
@@ -425,6 +525,20 @@ ALTER TABLE `champions`
 --
 ALTER TABLE `teams`
   ADD CONSTRAINT `teams_ibfk_1` FOREIGN KEY (`league`) REFERENCES `leagues` (`id`);
+
+--
+-- Contraintes pour la table `team_matchs`
+--
+ALTER TABLE `team_matchs`
+  ADD CONSTRAINT `team_matchs_ibfk_1` FOREIGN KEY (`matchID`) REFERENCES `matchs` (`id`),
+  ADD CONSTRAINT `team_matchs_ibfk_2` FOREIGN KEY (`teamID`) REFERENCES `teams` (`id`);
+
+--
+-- Contraintes pour la table `user_matchs`
+--
+ALTER TABLE `user_matchs`
+  ADD CONSTRAINT `user_matchs_ibfk_1` FOREIGN KEY (`matchID`) REFERENCES `matchs` (`id`),
+  ADD CONSTRAINT `user_matchs_ibfk_2` FOREIGN KEY (`userID`) REFERENCES `users` (`id`);
 
 --
 -- Contraintes pour la table `user_teams`
