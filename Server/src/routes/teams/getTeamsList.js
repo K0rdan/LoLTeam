@@ -2,8 +2,8 @@
 const fetch  = require('node-fetch');
 const _      = require('lodash');
 // Custom Imports
-const Config = require('./../utils/config');
-const Log    = require('./../utils/log');
+const Config = require('./../../utils/config');
+const Log    = require('./../../utils/log');
 // Logs
 const LOGTAGS = ["SERVER", "TeamsList"];
 
@@ -29,8 +29,6 @@ module.exports = function TeamsList (req, res, mysql) {
             });
         }
     }
-    else {
+    else
         res.json({ status: "ko", error: "Unknown user." });
-        return 0;
-    }
 }

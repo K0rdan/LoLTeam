@@ -99,7 +99,8 @@ module.exports = class Server {
         this.dataRoutes = {
             Login: require("./routes/login"),
             Logout: require("./routes/logout"),
-            getTeamsList: require("./routes/getTeamsList"),
+            getTeamsList: require("./routes/teams/getTeamsList"),
+            getTeamMatchHistory: require("./routes/teams/getTeamMatchHistory"),
             getSummonerID: require("./routes/getSummonerID"),
             getMatchHistory: require("./routes/getMatchHistory")
         };
@@ -143,6 +144,11 @@ module.exports = class Server {
         });
         this.app.get("/teamslist/:userID?", function(req, res) {
             me.dataRoutes.getTeamsList(req, res, me.connection);
+        });
+        //
+        // TEAM MATCH HISTORY
+        this.app.get("/teammatchhistory/:teamID", function(req, res) {
+            me.dataRoutes.getTeamMatchHistory(req, res, me.connection);
         });
         //
         // MATCH HISTORY
