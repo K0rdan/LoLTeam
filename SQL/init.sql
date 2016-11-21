@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Client :  db
--- Généré le :  Dim 20 Novembre 2016 à 22:45
+-- Généré le :  Lun 21 Novembre 2016 à 17:19
 -- Version du serveur :  5.7.16
 -- Version de PHP :  5.6.26
 
@@ -189,6 +189,7 @@ CREATE TABLE `lastQuery` (
 --
 
 INSERT INTO `lastQuery` (`date`) VALUES
+('2015-04-30 00:00:00'),
 ('2015-04-30 00:00:00');
 
 -- --------------------------------------------------------
@@ -288,15 +289,18 @@ CREATE TABLE `teams` (
   `league` int(11) NOT NULL DEFAULT '0',
   `wins` int(11) NOT NULL DEFAULT '0',
   `looses` int(11) NOT NULL DEFAULT '0',
-  `lastUpdate` timestamp NULL DEFAULT NULL
+  `lastUpdate` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `isUpdating` tinyint(1) NOT NULL DEFAULT '0',
+  `gamesLoading` int(11) DEFAULT NULL,
+  `gamesLoaded` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Contenu de la table `teams`
 --
 
-INSERT INTO `teams` (`id`, `teamID`, `name`, `tag`, `league`, `wins`, `looses`, `lastUpdate`) VALUES
-(1, 'TEAM-e59df190-3e2e-11e6-b377-c81f66dd7106', 'Blood Is All', 'BLOOIA', 6, 24, 27, NULL);
+INSERT INTO `teams` (`id`, `teamID`, `name`, `tag`, `league`, `wins`, `looses`, `lastUpdate`, `isUpdating`, `gamesLoading`, `gamesLoaded`) VALUES
+(1, 'TEAM-e59df190-3e2e-11e6-b377-c81f66dd7106', 'Blood Is All', 'BLOOIA', 6, 24, 27, NULL, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -473,7 +477,7 @@ ALTER TABLE `champions`
 -- AUTO_INCREMENT pour la table `const`
 --
 ALTER TABLE `const`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
 -- AUTO_INCREMENT pour la table `leagues`
 --
@@ -508,7 +512,7 @@ ALTER TABLE `user_matchs`
 -- AUTO_INCREMENT pour la table `user_teams`
 --
 ALTER TABLE `user_teams`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
 -- Contraintes pour les tables exportées
 --
