@@ -1,4 +1,4 @@
-const RIOTAPI = require('./riotAPI');
+const RIOTAPI = require('./riot/API');
 
 module.exports = {
     SERVER: {

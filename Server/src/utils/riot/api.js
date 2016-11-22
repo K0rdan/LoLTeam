@@ -1,7 +1,10 @@
+const RequestManager = require('./requestManager');
+
 const PROTOCOL = 'https';
 const REGION = 'euw';
 
 var API_KEY = null;
+var requestManager = new RequestManager();
 
 function getAPIBaseURL() { 
     return PROTOCOL + '://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/'; 
@@ -27,6 +30,23 @@ module.exports = {
                 else 
                     return null;
             }
-        } 
+        },
+        TEAM: {
+            VERSION: '2.4',
+            getFullURL: function(teamID) {
+                if(API_KEY != null) 
+                    return getAPIBaseURL() + 'v' + this.VERSION + '/team/' + teamID + '?api_key=' + API_KEY;
+                else
+                    return null;
+            },
+        }
+    },
+    REQUEST: {
+        setQueryRateLimit: function(queryRateLimit) {
+            requestManager.setQueryRateLimit(queryRateLimit);
+        },
+        push: function(url, callback) {
+            requestManager.pushRequest(url, callback);
+        }
     }
 };

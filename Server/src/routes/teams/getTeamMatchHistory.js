@@ -14,16 +14,16 @@ const LOGTAGS = ["SERVER", "TeamMatchHistory"];
 //          - '1' : DB is already updating, check the 'getUpdateStatus' to get more informations.
 module.exports = function TeamsMatchHistory (req, res, mysql) {
     if(req.params.teamID)
-        getLastUpdate(mysql, req.params.teamID, getHistory);
+        getLastUpdate(mysql, req.params.teamID, res, getHistory);
     else
         res.json({ status: "ko", error: "Unknown team." });
 }
 
-function getLastUpdate(mysql, teamID, callback) {
-    var query = "SELECT `t`.`lastUpdate`, `t`.`isUpdating` FROM lolteam.`teams` AS `t` WHERE `t`.`id`=?;";
+function getLastUpdate(mysql, teamID, res, callback) {
+    var query = "SELECT `t`.`teamID`, `t`.`lastUpdate`, `t`.`isUpdating` FROM lolteam.`teams` AS `t` WHERE `t`.`id`=?;";
     mysql.query(query, [teamID], function(err, row, fields) {
         if (!err)
-            callback(row[0]);
+            callback(row[0], res);
         else {
             res.json({ status: "ko", error: "SQL Error" });
             Log(_.concat(LOGTAGS, "MYSQL"), err);
@@ -33,15 +33,19 @@ function getLastUpdate(mysql, teamID, callback) {
 
 // NOTES :
 //  - We can get 'Undefined' for `teams`.`lastUpdate`. It means that the database value is 'NULL'.
-function getHistory(row) {
+function getHistory(row, res) {
     var shouldUpdate = false;
-    
-    if(row["lastUpdate"] && row["isUpdating"]) {
-        if(row["lastUpdate"] == null && row["isUpdating"] == 0)
+    if(typeof(row.teamID) !== "undefined" && typeof(row.lastUpdate) !== "undefined" && typeof(row.isUpdating) !== "undefined") {
+        if(row.lastUpdate == null && row.isUpdating == 0)
             shouldUpdate = true;
 
         if(shouldUpdate){
-            // TODO : Update data
+            var url = Config.RIOT.API.TEAM.getFullURL(row.teamID);
+            if(url != null) {
+                Config.RIOT.REQUEST.push(url, function(fetchRes) {
+                    res.json({ status: "ok", result: fetchRes.result });
+                });
+            }
         }
         else
             res.json({ status: "ok", message: "The system is already updating your team's data.", code: "1" });

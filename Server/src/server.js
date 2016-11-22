@@ -47,6 +47,9 @@ module.exports = class Server {
                 Log(["SERVER", "INIT", "MYSQL"], err);
         });
 
+        Config.RIOT.REQUEST.setQueryRateLimit(500/600 * 1000);
+        Log(["SERVER", "INIT"], "API query limiter loaded from DB.");
+
         this.listen(Config.SERVER.PORT);
         this._setupRoutes();
     }
@@ -68,15 +71,15 @@ module.exports = class Server {
         this.app.use(bodyParser.json());                        // Allow body type : JSON
         this.app.use(bodyParser.urlencoded({ extended:true })); // Allow body type : URL-encoded
         this.app.use(session({
-            secret          : Config.SERVER.REDIS.KEY,          // REDIS secret key
-            store           : new redisStore({
+            secret            : Config.SERVER.REDIS.KEY,          // REDIS secret key
+            store             : new redisStore({
                 client  : this.redisClient                      // REDIS parameters
             }),
-            saveUnitialized : false,                            // No session for unauthorized users
-            resave          : false,                            // Disable unmodified session saving
+            saveUninitialized : false,                            // No session for unauthorized users
+            resave            : false,                            // Disable unmodified session saving
             cookie: {
-                domain: 'server',
-                path: '/',
+                domain  : 'server',
+                path    : '/',
                 httpOnly: true,
                 maxAge  : 24*60*60*1000 
             }
