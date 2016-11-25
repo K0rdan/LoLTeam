@@ -46,7 +46,7 @@ module.exports = {
             requestManager.setQueryRateLimit(queryRateLimit);
         },
         push: function(url, callback) {
-            requestManager.pushRequest(url, callback);
+            requestManager._queuePushRequest(url, callback);
         }
     }
 };

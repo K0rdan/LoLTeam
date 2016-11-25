@@ -151,6 +151,8 @@ module.exports = class Server {
         //
         // TEAM MATCH HISTORY
         this.app.get("/teammatchhistory/:teamID", function(req, res) {
+            // Disable HTTP 304 (Not modified) responses.
+            res.setHeader('Last-Modified', (new Date()).toUTCString());
             me.dataRoutes.getTeamMatchHistory(req, res, me.connection);
         });
         //

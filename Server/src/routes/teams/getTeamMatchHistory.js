@@ -43,7 +43,7 @@ function getHistory(row, res) {
             var url = Config.RIOT.API.TEAM.getFullURL(row.teamID);
             if(url != null) {
                 Config.RIOT.REQUEST.push(url, function(fetchRes) {
-                    res.json({ status: "ok", result: fetchRes.result });
+                    res.json({ status: fetchRes.status, result: fetchRes.result });
                 });
             }
         }
