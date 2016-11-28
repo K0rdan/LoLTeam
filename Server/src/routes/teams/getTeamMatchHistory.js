@@ -1,9 +1,10 @@
 // Lib Imports
-const fetch  = require('node-fetch');
-const _      = require('lodash');
+const fetch         = require('node-fetch');
+const _             = require('lodash');
 // Custom Imports
-const Config = require('./../../utils/config');
-const Log    = require('./../../utils/log');
+const Config        = require('./../../utils/config');
+const Log           = require('./../../utils/log');
+const reqErrManager = require('./../../utils/riot/requestErrorsManager');
 // Logs
 const LOGTAGS = ["SERVER", "TeamMatchHistory"];
 
@@ -41,16 +42,8 @@ function getHistory(row, res) {
 
         if(shouldUpdate){
             var url = Config.RIOT.API.TEAM.getFullURL(row.teamID);
-            if(url != null) {
-                Config.RIOT.REQUEST.push(url, function(err, fetchRes) {
-                    if(!err && fetchRes)
-                        res.json({ status: fetchRes.status, result: fetchRes.result });
-                    else {
-                        res.json({ status: "ko", error: err });
-                        Log(LOGTAGS, "Error while getting the data : " + err);
-                    }
-                });
-            }
+            if(url != null) 
+                pushRequest(url, res);
         }
         else
             res.json({ status: "ok", message: "The system is already updating your team's data.", code: "1" });
@@ -59,4 +52,15 @@ function getHistory(row, res) {
         res.json({ status: "ko", error: "Invalid MySQL response" });
         Log(_.concat(LOGTAGS, "MYSQL"), "Invalid MySQL response");
     }
+}
+
+function pushRequest(url, res) {
+    Config.RIOT.REQUEST.push(url, function(err, fetchRes) {
+        if(!err && fetchRes)
+            res.json({ status: fetchRes.status, result: (fetchRes.result ? fetchRes.result : fetchRes) });
+        else
+            reqErrManager("TeamMatchHistory", {url: url, res: res}, err, function(req, res){
+                pushRequest(req, res);
+            });
+    });
 }
