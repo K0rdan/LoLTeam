@@ -13,8 +13,8 @@ const debug = false;
 module.exports = class RequestManager {
     constructor() {
         this.lastQuery      = 0;
-        this.queryRateLimit = 10000;
-        this.queryTimeout   = 10000;
+        this.queryRateLimit = 1000;
+        this.queryTimeout   = 100;
         this.queue          = null;
 
         // Custom binds
@@ -134,7 +134,7 @@ module.exports = class RequestManager {
         })
         .then(function(json) {
             if(typeof(callback) == "function")
-                callback({ status: "ok", result: json });
+                callback(null, { status: "ok", result: json });
         })
         .catch(function(e) {
             Log(LOGTAGS, e); 

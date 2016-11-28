@@ -42,8 +42,13 @@ function getHistory(row, res) {
         if(shouldUpdate){
             var url = Config.RIOT.API.TEAM.getFullURL(row.teamID);
             if(url != null) {
-                Config.RIOT.REQUEST.push(url, function(fetchRes) {
-                    res.json({ status: fetchRes.status, result: fetchRes.result });
+                Config.RIOT.REQUEST.push(url, function(err, fetchRes) {
+                    if(!err && fetchRes)
+                        res.json({ status: fetchRes.status, result: fetchRes.result });
+                    else {
+                        res.json({ status: "ko", error: err });
+                        Log(LOGTAGS, "Error while getting the data : " + err);
+                    }
                 });
             }
         }
