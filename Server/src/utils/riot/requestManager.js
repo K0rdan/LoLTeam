@@ -16,13 +16,15 @@ module.exports = class RequestManager {
         this.queryRateLimit = 1000;
         this.queryTimeout   = 100;
         this.queue          = null;
+        this.fetchOptions = {
+            timeout: this.queryTimeout
+        };
 
         // Custom binds
         this._queueProcess      = this._queueProcess.bind(this);
         this._queueDrain        = this._queueDrain.bind(this);
         this._queuePushRequest  = this._queuePushRequest.bind(this);
-        this._queueRetryRequest = this._queueRetryRequest.bind(this);
-        this.parseRequestErrors = this.parseRequestErrors.bind(this);
+        this._queueError        = this._queueError.bind(this);
         
         // Init queue
         this.queue = async.queue(this._queueProcess);
@@ -36,122 +38,63 @@ module.exports = class RequestManager {
             this.queryRateLimit = queryRateLimit;
     }
 
-    parseRequestErrors(response, data, callback){
-        if(debug)
-            console.log("[QUEUE] Parsing error in request's result");
-
-        var waitingTime = 0;
-        
-        switch(response.status){
-            case -1:  // Timeout
-                Log(LOGTAGS, "Request timeout : " + data.url);
-                if(!data.retries)
-                    data.retries    = 1;
-                break;
-            case 400: // Bad Request
-                Log(LOGTAGS, "Request error : " + response.status + ", " + data.url);
-                break;
-            case 401: // Unauthorized
-                Log(LOGTAGS, "Unauthorized. Wrong API_KEY / Revoked ? " + data.url);
-                break;
-            case 404: // Team not found
-                Log(LOGTAGS, "Team not found. Wrong team ID ? " + data.url);
-                break;
-            case 429: // Rate limit exceed
-                Log(LOGTAGS, "Request overflow. Waiting 10s..." + data.url);
-                if(!data.retries) {
-                    waitingTime = 10000;
-                    data.retries     = 1;
-                } 
-                break;
-            case 500:
-                Log(LOGTAGS, "Riot API error. Retrying...");
-                if(!data.retries)
-                    data.retries     = 5;
-                break;
-            case 503:
-                Log(LOGTAGS, "Riot API unavailable. Retrying...");
-                if(!data.retries)
-                    data.retries     = 5;
-                break;
-        }
-
-        if(data.retries && data.retries > 0){
-            if(data.status)
-                delete data.status;
-            this._queueRetryRequest(data, callback, waitingTime);
-        }
-        else {
-            if(typeof(callback) == "function")
-                callback({ status: "ko", error: response.status });
-        }
-    }
-
     // QUEUE METHOD HANDLERS
-    _queuePushRequest(reqURL, callback) {
+    _queuePushRequest(reqUrl, callback) {
         if(debug)
             console.log("[QUEUE] Pushing request");
 
-        this.queue.push(reqURL, callback);
+        this.queue.push(reqUrl, callback);
     }
-    _queueProcess(reqURL, callback){
+    _queueProcess(reqUrl, callback){
         try{
             if(debug)
                 console.log("[QUEUE] Processing request");
 
             if(this.lastQuery == 0){
-                this._queueExecuteRequest(reqURL, callback);
+                this._queueExecuteRequest(reqUrl, callback);
             }
             else{
                 // Do we have to wait ?
                 if((Date.now() - this.lastQuery) < this.queryRateLimit){
                     while((Date.now() - this.lastQuery) < this.queryRateLimit);
-                    console.log((Date.now() - this.lastQuery) + "ms awaited");
-                    this._queueExecuteRequest(reqURL, callback);
+                    // console.log((Date.now() - this.lastQuery) + "ms awaited");
+                    this._queueExecuteRequest(reqUrl, callback);
                 }
                 else
-                    this._queueExecuteRequest(reqURL, callback);
+                    this._queueExecuteRequest(reqUrl, callback);
             }
         }
         catch(e) {
             Log(LOGTAGS, "Error in process : " + e);
         }
     }
-    _queueExecuteRequest(reqURL, callback) {
+    _queueExecuteRequest(reqUrl, callback) {
         if(debug)
             console.log("[QUEUE] Executing request");
 
-        var me = this;
-        fetch(url.parse(reqURL), { timeout: this.queryTimeout})
+        let me = this;
+        fetch(url.parse(reqUrl), this.fetchOptions)
         .then(function(response) {
             me.lastQuery = Date.now();
             if(response.ok)
                 return response.json();
-            else{
-                // TODO : handling errors
-                //me.parseRequestErrors(response, data, callback); 
-            }
+            else
+                callback(response, {status: "ko", message: "Fetch response error", error: response});
         })
         .then(function(json) {
             if(typeof(callback) == "function")
                 callback(null, { status: "ok", result: json });
         })
         .catch(function(e) {
-            Log(LOGTAGS, e); 
-            // TODO : handling errors
-            //me.parseRequestErrors(null, data, callback);
+            callback(e, {status: "ko", message: "Fetch error", error: e});
         });
     }
-    _queueRetryRequest(data, callback, waitingTime=0) {
-        if(debug)
-            console.log("[QUEUE] Retrying request");
-
-        // TODO : handling errors
-        //me.parseRequestErrors(response, data, callback);
-    }
     _queueError(e, t) {
-        Log(LOGTAGS, "Error while processing a request");
-        console.log("Description :", e);
+        // If an option is handled do not show logs on event rised
+        if(e.type && this.fetchOptions.timeout && e.type != "request-timeout") {
+            Log(LOGTAGS, "Error while processing a request");
+            console.log("Description :", e);
+        }
     }
     _queueDrain() {
         // Something to do when the queue is empty ?
