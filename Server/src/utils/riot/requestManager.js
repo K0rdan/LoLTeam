@@ -14,7 +14,7 @@ module.exports = class RequestManager {
     constructor() {
         this.lastQuery      = 0;
         this.queryRateLimit = 1000;
-        this.queryTimeout   = 100;
+        this.queryTimeout   = 10000;
         this.queue          = null;
 
         // Custom binds
