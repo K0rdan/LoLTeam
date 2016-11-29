@@ -5,6 +5,7 @@ const _             = require('lodash');
 const Config        = require('./../../utils/config');
 const Log           = require('./../../utils/log');
 const reqErrManager = require('./../../utils/riot/requestErrorsManager');
+const updateTeam    = require('./../../utils/database/updateTeam');
 // Logs
 const LOGTAGS = ["SERVER", "TeamMatchHistory"];
 
@@ -24,7 +25,7 @@ function getLastUpdate(mysql, teamID, res, callback) {
     var query = "SELECT `t`.`teamID`, `t`.`lastUpdate`, `t`.`isUpdating` FROM lolteam.`teams` AS `t` WHERE `t`.`id`=?;";
     mysql.query(query, [teamID], function(err, row, fields) {
         if (!err)
-            callback(row[0], res);
+            callback(row[0], teamID, res, mysql);
         else {
             res.json({ status: "ko", error: "SQL Error" });
             Log(_.concat(LOGTAGS, "MYSQL"), err);
@@ -34,19 +35,24 @@ function getLastUpdate(mysql, teamID, res, callback) {
 
 // NOTES :
 //  - We can get 'Undefined' for `teams`.`lastUpdate`. It means that the database value is 'NULL'.
-function getHistory(row, res) {
+function getHistory(row, teamID, res, mysql) {
     var shouldUpdate = false;
     if(typeof(row.teamID) !== "undefined" && typeof(row.lastUpdate) !== "undefined" && typeof(row.isUpdating) !== "undefined") {
-        if(row.lastUpdate == null && row.isUpdating == 0)
+        // 7200000 = 1000*60*60*2 => Number of milliseconds in 2 hours (To compare with GMT based time in db)
+        if((row.lastUpdate == null || (Date.now() - new Date(row.lastUpdate)) > 1000*60*60*2) && row.isUpdating == 0)
             shouldUpdate = true;
 
         if(shouldUpdate){
             var url = Config.RIOT.API.TEAM.getFullURL(row.teamID);
             if(url != null) 
-                pushRequest(url, res);
+                pushRequest(url, teamID, res, mysql);
         }
-        else
-            res.json({ status: "ok", message: "The system is already updating your team's data.", code: "1" });
+        else {
+            if(row.isUpdating == 1)
+                res.json({ status: "ok", message: "The system is already updating your team's data.", code: 1 });
+            else
+                res.json({ status: "ok", message: "Your team's data are up to date.", code: 2 });
+        }
     }
     else {
         res.json({ status: "ko", error: "Invalid MySQL response" });
@@ -54,13 +60,17 @@ function getHistory(row, res) {
     }
 }
 
-function pushRequest(url, res) {
+function pushRequest(url, teamID, res, mysql) {
     Config.RIOT.REQUEST.push(url, function(err, fetchRes) {
-        if(!err && fetchRes)
-            res.json({ status: fetchRes.status, result: (fetchRes.result ? fetchRes.result : fetchRes) });
+        if(!err && fetchRes){
+            var result = (fetchRes.result ? fetchRes.result : fetchRes);
+            new updateTeam(result, teamID, mysql, function(){
+                res.json({ status: fetchRes.status, result: result, code: 0 });
+            });
+        }
         else
             reqErrManager("TeamMatchHistory", {url: url, res: res}, err, function(req, res){
-                pushRequest(req, res);
+                pushRequest(req, teamID, res, mysql);
             });
     });
 }
