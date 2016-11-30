@@ -25,7 +25,7 @@ module.exports = class updateTeam{
         this.onSQLerror        = this.onSQLerror.bind(this);
         
         async.waterfall([
-            this.TeamDetails,
+            this.updateTeamDetails,
             this.addMatchs,
             this.addMatchsDetails
         ], function(err, result) {
@@ -38,7 +38,7 @@ module.exports = class updateTeam{
         if(debug)
             Log(LOGTAGS, "updateTables");
             
-        let teamDetails = this.data.teamStatDetails[0];
+        let teamDetails = this.data.teamStatDetails[1];
         let query = "UPDATE lolteam.`teams` SET `wins`=?, `looses`=? WHERE id=?;";
         let me = this;
         
