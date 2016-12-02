@@ -1,10 +1,10 @@
 const RequestManager = require('./requestManager');
+const RequestErrorsManager = require('./requestErrorsManager');
+const PROTOCOL       = 'https';
+const REGION         = 'euw';
 
-const PROTOCOL = 'https';
-const REGION = 'euw';
-
-var API_KEY = null;
-var requestManager = new RequestManager();
+let API_KEY          = null;
+let requestManager   = new RequestManager();
 
 function getAPIBaseURL() { 
     return PROTOCOL + '://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/'; 
@@ -21,13 +21,22 @@ module.exports = {
         PROTOCOL: PROTOCOL,
         REGION: REGION,
         BASE_URL: getAPIBaseURL(),
-        GAME: {
-            VERSION : '1.3',
-            getBaseURL: function(summonerID) { return getAPIBaseURL() + 'v' + this.VERSION + '/game/by-summoner/' + summonerID + '/'; },
-            getFullURL: function(summonerID) { 
+        MATCH: {
+            VERSION : '2.2',
+            TIMELINE: false,
+            setIncludeTimeline: function(includeTimeline) { this.TIMELINE = includeTimeline; },
+            getIncludeTimeline: function() { return this.TIMELINE; },
+            getBaseURL: function(gameID) { return getAPIBaseURL() + 'v' + this.VERSION + '/match/' + gameID ; },
+            getFullURL: function(gameID) {
                 if(API_KEY != null)
-                    return this.getBaseURL(summonerID) + 'recent?api_key=' + API_KEY;
+                    return this.getBaseURL(gameID) + '?includeTimeline=' + this.getIncludeTimeline() + '&api_key=' + API_KEY;
                 else 
+                    return null;
+            },
+            getFullURLWithTimeline: function(gameID) {
+                if(gameID && API_KEY != null)
+                    return this.getBaseURL(gameID) + '?includeTimeline=true&api_key=' + API_KEY;
+                else
                     return null;
             }
         },
@@ -47,6 +56,9 @@ module.exports = {
         },
         push: function(url, callback) {
             requestManager._queuePushRequest(url, callback);
+        },
+        onError: function(route, data, err, callback) {
+            RequestErrorsManager(route, callback);
         }
     }
 };

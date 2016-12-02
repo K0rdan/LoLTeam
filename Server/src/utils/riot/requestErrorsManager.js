@@ -34,10 +34,10 @@ module.exports = function RequestErrorsManager (route, data, err, callback){
                 break;
             case 429: // Rate limit exceed
                 Log(LOGTAGS, "Request overflow. Waiting 10s..." + data.url);
-                if(retries == null) {
-                    waitingTime = 10000;
-                    retries     = 1;
-                } 
+                let startTime = Date.now();
+                setTimeout(function() {
+                    console.log((Date.now() - startTime) +"ms awaited");
+                }, 10000);
                 break;
             case 500:
                 Log(LOGTAGS, "Riot API error. Retrying...");
@@ -54,7 +54,7 @@ module.exports = function RequestErrorsManager (route, data, err, callback){
 
     if(retries > 0){
         retries--;
-        callback(data.url, data.res);
+        callback(data.url);
     }
     else {
         let errMsg = null;
@@ -63,6 +63,7 @@ module.exports = function RequestErrorsManager (route, data, err, callback){
         if(err.status)
             errMsg = err.status;
 
-        data.res.json({ status: "ko", error: errMsg });
+        if(data.res)
+            data.res.json({ status: "ko", error: errMsg });
     }
 }

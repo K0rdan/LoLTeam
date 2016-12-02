@@ -93,16 +93,16 @@ class TeamMatchHistory {
         }
     }
 
-    pushRequest(url, callback) {
+    pushRequest(reqURL, callback) {
         let me=this;
-        Config.RIOT.REQUEST.push(url, function(err, fetchRes) {
+        Config.RIOT.REQUEST.push(reqURL, function(err, fetchRes) {
             if(!err && fetchRes){
                 let uT = new updateTeam((fetchRes.result ? fetchRes.result : fetchRes), me.teamID, me.mysql);
                 callback(null, 3);
             }
             else{
-                reqErrManager("TeamMatchHistory", {url: url, res: res}, err, function(req, res){
-                    me.pushRequest(req, callback);
+                reqErrManager("TeamMatchHistory", {url: reqURL, res: res}, err, function(reqURL){
+                    me.pushRequest(reqURL, callback);
                 });
             }
         });
