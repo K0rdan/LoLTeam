@@ -1,35 +1,40 @@
 // Lib Imports
-const _      = require('lodash');
-const async  = require('async');
+const _             = require('lodash');
+const async         = require('async');
 // Custom Imports
-const Log    = require('./../log');
+const Config        = require('./../config');
+const reqErrManager = require('./../riot/requestErrorsManager');
+const insertMatch   = require('./insertMatch');
+const Log           = require('./../log');
 // Logs
 const LOGTAGS = ["SERVER", "UpdateTeam"];
 
 const debug = true;
 
 module.exports = class updateTeam{
-    constructor(data, teamID, mysql, callback) {
+    constructor(data, teamID, mysql) {
         // Init variables
         this.mysql    = mysql;
         this.data     = data[Object.keys(data)[0]];
         this.teamID   = teamID;
         this.games    = this.data.matchHistory;
-        this.callback = callback;
 
         // Init binds
         this.updateTeamDetails = this.updateTeamDetails.bind(this);
         this.addMatchs         = this.addMatchs.bind(this);
         this.selectNewMatchs   = this.selectNewMatchs.bind(this);
         this.addMatchsDetails  = this.addMatchsDetails.bind(this);
-        this.onSQLerror        = this.onSQLerror.bind(this);
+        this.pushRequest       = this.pushRequest.bind(this);
         
         async.waterfall([
             this.updateTeamDetails,
             this.addMatchs,
             this.addMatchsDetails
         ], function(err, result) {
-            console.log("Waterfall end", arguments);
+            if(err)
+                Log(LOGTAGS, err);
+            else
+                console.log("Result :", result);
         });
     }
     
@@ -105,12 +110,27 @@ module.exports = class updateTeam{
     addMatchsDetails(gamesID, callback) {
         if(debug)
             Log(LOGTAGS, "addMatchsDetails");
-
-        callback(null, []);
+        
+        let me = this;
+        _.each(gamesID, function(value, key){
+            me.pushRequest(Config.RIOT.API.MATCH.getFullURLWithTimeline(value.matchID), callback);
+        });
     }
 
-    onSQLerror(err) {
-        // TODO : handle errors in callback
-        
+    pushRequest(reqURL, callback) {
+        let me = this;
+        Config.RIOT.REQUEST.push(reqURL, function(err, fetchRes){
+            if(err || !fetchRes) {
+                reqErrManager(LOGTAGS[1], {url: reqURL}, err, function(reqURL){
+                    me.pushRequest(reqURL, callback);
+                });
+            }
+            else {
+                new insertMatch(me.teamID, me.mysql, fetchRes);
+            }
+
+            if(key == gamesID.length)
+                console.log("LAST ELEMENT CALLBACK");
+        });
     }
 }
