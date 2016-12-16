@@ -1,13 +1,13 @@
 {
     "name": "lolteam-server",
-    "version": "0.1.0",
+    "version": "0.4.0",
     "description": "LoL Team Server",
     "main": "./src/main.js",
     "dependencies": {
         "lodash": ">=4.16.6",
         "express": ">=4.14.0",
         "express-session": ">=1.14.2",
-        "mysql": ">=2.11.1",
+        "mysql": ">=2.12.0",
         "cookie-parser": ">=1.4.3",
         "body-parser": ">=1.15.2",
         "redis": ">=2.6.2",

@@ -7,6 +7,7 @@ const bodyParser   = require('body-parser');
 const redis        = require('redis');
 const redisStore   = require('connect-redis')(session);
 const _            = require('lodash');
+const async        = require('async');
 
 // Custom Imports
 const Config     = require('./utils/config');
@@ -22,7 +23,8 @@ module.exports = class Server {
     constructor() {
         this.app = null;
         this.connection = null;
-        this.isConnected = false;
+        this.isRedisConnected = false;
+        this.isMySQLConnected = false;
         this.clientPool = [];
 
         // Custom binds
@@ -33,25 +35,58 @@ module.exports = class Server {
     }
 
     init() {
-        this.redisClient = redis.createClient(Config.SERVER.REDIS.PORT, Config.SERVER.REDIS.HOST);
-        this.connection  = mysql.createConnection(Config.MYSQL);
-        this.connection.connect(this._mysqlConnectionHandler.bind(this));
+        let me = this;
+        async.waterfall([
+            // Redis connection
+            function(callback) {
+                me.redisClient = redis.createClient(Config.SERVER.REDIS.PORT, Config.SERVER.REDIS.HOST);
+                me.redisClient.on('ready',function(err) {
+                    if(err) 
+                        callback(err, "REDIS");
+                    me.isRedisConnected = true;
+                    callback(null);
+                });
+            },
+            // MySQL connection
+            function(callback) {
+                me.connection  = mysql.createConnection(Config.MYSQL);
+                me.connection.connect(function(err) {
+                    if(err)
+                        callback(err, "MYSQL");
+                    me.isMySQLConnected = true;
+                    callback(null);
+                });
+            },
+            // Init constants
+            function(callback) {
+                var query = "SELECT * FROM lolteam.const WHERE name=? LIMIT 1;";
+                me.connection.query(query, ['RIOT_API_KEY'], function(err, row, fields) {
+                    if (!err){
+                        Config.RIOT.setAPIKey(row[0].value)
+                        Log(["SERVER", "INIT"], "API key loaded from DB.")
+                    }
+                    else
+                        callback(err, "MYSQL");
+                });
 
-        var query = "SELECT * FROM lolteam.const WHERE name=? LIMIT 1;";
-        this.connection.query(query, ['RIOT_API_KEY'], function(err, row, fields) {
-            if (!err){
-                Config.RIOT.setAPIKey(row[0].value)
-                Log(["SERVER", "INIT"], "API key loaded from DB.")
+                me.connection.query(query, ['RIOT_API_LIMIT'], function(err, row, fields) {
+                    if (!err){
+                        Config.RIOT.REQUEST.setQueryRateLimit(row[0].value);
+                        Log(["SERVER", "INIT"], "API query limiter loaded from DB.");
+                        callback(null);
+                    }
+                    else
+                        callback(err, "MYSQL");
+                });
+            },
+            // Run server
+            function() {
+                me.listen(Config.SERVER.PORT);
+                me._setupRoutes();
             }
-            else
-                Log(["SERVER", "INIT", "MYSQL"], err);
+        ], function(err, step) {
+            Log(["SERVER", "INIT", step], err);            
         });
-
-        Config.RIOT.REQUEST.setQueryRateLimit(500/600 * 1000);
-        Log(["SERVER", "INIT"], "API query limiter loaded from DB.");
-
-        this.listen(Config.SERVER.PORT);
-        this._setupRoutes();
     }
 
     listen(port = Config.SERVER.PORT) {
@@ -88,15 +123,6 @@ module.exports = class Server {
             Log(["SERVER"],'Server listening on port ' + port);
         });
     } 
-
-    _mysqlConnectionHandler(err) {
-        if(err){
-            Log(["SERVER","MYSQL"], "Error connecting to database : " + err);
-            return null; 
-        }
-
-        this.isConnected = true;
-    }
 
     _setupRoutes() {
         this.dataRoutes = {
