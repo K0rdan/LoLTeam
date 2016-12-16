@@ -79,6 +79,18 @@ module.exports = class Server {
                         callback(err, "MYSQL");
                 });
             },
+            // TODO : Clean teams temp data (update)
+            function(callback) {
+                var query = "UPDATE lolteam.`teams` SET `lastUpdate`=?, `isUpdating`=?;";
+                me.connection.query(query, [null, 0], function(err, row, field){
+                    if(!err) {
+                        Log(["SERVER", "INIT"], "Teams' status has correctly been reset.");
+                        callback(null);
+                    }
+                    else
+                        callback(err, "MYSQL");
+                });
+            },
             // Run server
             function() {
                 me.listen(Config.SERVER.PORT);

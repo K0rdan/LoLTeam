@@ -9,8 +9,6 @@ const Log           = require('./../log');
 // Logs
 const LOGTAGS = ["SERVER", "UpdateTeam"];
 
-const debug = true;
-
 module.exports = class updateTeam{
     constructor(data, teamID, mysql) {
         // Init variables
@@ -40,7 +38,7 @@ module.exports = class updateTeam{
     
     // Update 'teams' table
     updateTeamDetails(callback) { 
-        if(debug)
+        if(Config.DEBUG)
             Log(LOGTAGS, "updateTables");
             
         let teamDetails = this.data.teamStatDetails[1];
@@ -57,7 +55,7 @@ module.exports = class updateTeam{
 
     // Insert date into 'matchs' table
     addMatchs(callback) {
-        if(debug)
+        if(Config.DEBUG)
             Log(LOGTAGS, "addMatchs");
 
         let query   = "INSERT INTO lolteam.`matchs` (`date`, `matchID`) VALUES ",
@@ -78,12 +76,12 @@ module.exports = class updateTeam{
                 if(row.affectedRows > 0) {
                     // isUpdating -> true 
                     me.mysql.query("UPDATE lolteam.`teams` SET `isUpdating`=? WHERE id=?;", [1, me.teamID], function(err, row, fields){
-                        if(!err)
-                            me.selectNewMatchs(gamesID, callback);
-                        else
+                        if(err)
                             callback(err);                        
                     });
                 }
+
+                me.selectNewMatchs(gamesID, callback);
             }
             else
                 callback(err);
@@ -91,15 +89,15 @@ module.exports = class updateTeam{
     }
 
     selectNewMatchs(gamesID, callback) {
-        if(debug)
+        if(Config.DEBUG)
             Log(LOGTAGS, "selectNewMatchs");
 
         // New matchs are matchs with NULL duration, team1 and team2 column.
-        let query = "SELECT `matchID` FROM lolteam.`matchs` WHERE duration IS NULL AND team1 IS NULL AND team2 IS NULL AND matchID IN (" + gamesID.join() + ")";
+        let query = "SELECT `matchID` FROM lolteam.`matchs` WHERE duration IS NULL AND team1 IS NULL AND team2 IS NULL AND matchID IN (" + gamesID.join() + ");";
         let me = this;
-        this.mysql.query(query, function(err, row, fields) {
+        this.mysql.query(query, function(err, rows, fields) {
             if (!err)
-                callback(null, row);
+                callback(null, rows);
             else
                 callback(err);
         });
@@ -108,16 +106,16 @@ module.exports = class updateTeam{
     // NOTES :
     //  gamesID : Array of gameID.
     addMatchsDetails(gamesID, callback) {
-        if(debug)
+        if(Config.DEBUG)
             Log(LOGTAGS, "addMatchsDetails");
         
         let me = this;
         _.each(gamesID, function(value, key){
-            me.pushRequest(Config.RIOT.API.MATCH.getFullURLWithTimeline(value.matchID), callback);
+            me.pushRequest(Config.RIOT.API.MATCH.getFullURLWithTimeline(value.matchID), key, callback);
         });
     }
 
-    pushRequest(reqURL, callback) {
+    pushRequest(reqURL, key, callback) {
         let me = this;
         Config.RIOT.REQUEST.push(reqURL, function(err, fetchRes){
             if(err || !fetchRes) {
@@ -129,8 +127,10 @@ module.exports = class updateTeam{
                 new insertMatch(me.teamID, me.mysql, fetchRes);
             }
 
-            if(key == gamesID.length)
-                console.log("LAST ELEMENT CALLBACK");
+            console.log("Parameter : KEY", key);
+
+            /*if(key == gamesID.length)
+                console.log("LAST ELEMENT CALLBACK");*/
         });
     }
 }

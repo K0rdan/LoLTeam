@@ -55,6 +55,9 @@ class TeamMatchHistory {
     }
 
     getLastUpdate(callback) {
+        if(Config.DEBUG)
+            Log(LOGTAGS, "getLastUpdate");
+
         let query = "SELECT `t`.`teamID`, `t`.`lastUpdate`, `t`.`isUpdating` FROM lolteam.`teams` AS `t` WHERE `t`.`id`=?;";
         this.mysql.query(query, [this.teamID], function(err, row, fields) {
             if (!err)
@@ -69,10 +72,13 @@ class TeamMatchHistory {
     // NOTES :
     //  - We can get 'Undefined' for `teams`.`lastUpdate`. It means that the database value is 'NULL'.
     getHistory(row, callback) {
+        if(Config.DEBUG)
+            Log(LOGTAGS, "getHistory");
+
         var shouldUpdate = false;
         if(typeof(row.teamID) !== "undefined" && typeof(row.lastUpdate) !== "undefined" && typeof(row.isUpdating) !== "undefined") {
             // 7200000 = 1000*60*60*2 => Number of milliseconds in 2 hours (To compare with GMT based time in db)
-            if((row.lastUpdate == null || (Date.now() - new Date(row.lastUpdate)) > 1000*60*60*2) && row.isUpdating == 0)
+            if((row.lastUpdate == null || (Date.now() - new Date(row.lastUpdate)) > 7200000) && row.isUpdating == 0)
                 shouldUpdate = true;
 
             if(shouldUpdate){
@@ -94,6 +100,9 @@ class TeamMatchHistory {
     }
 
     pushRequest(reqURL, callback) {
+        if(Config.DEBUG)
+            Log(LOGTAGS, "pushRequest");
+            
         let me=this;
         Config.RIOT.REQUEST.push(reqURL, function(err, fetchRes) {
             if(!err && fetchRes){

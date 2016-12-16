@@ -1,6 +1,7 @@
 const RIOTAPI = require('./riot/API');
 
 module.exports = {
+    DEBUG: true,
     SERVER: {
         DOMAIN: 'http://server',
         PORT: 8000,
@@ -12,7 +13,6 @@ module.exports = {
     },
     MYSQL: {
         host        : 'lolteam-db',
-        localAddress: 'lolteam-db',
         user        : 'root',
         password    : 'cky_w+IQ@l',
         database    : 'lolteam'
