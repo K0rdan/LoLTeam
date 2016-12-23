@@ -36,26 +36,48 @@ class MatchHistory {
         }
 
         Log(TAGSLOG, errMessage);
+        this.res.json({status: "ko", error: errMessage});
     }
 
     _checkParams(callback) {
+        let errRaised = false;
         // Unknow error
-        if(!this.req.params)
+        if(!this.req.params){
             callback(0, null);
+            errRaised = true;
+        }
         // Missing parameter
-        if(this.req.params.length == 0 || !this.req.params.summonerID)
+        if(this.req.params.length == 0 || !this.req.params.summonerID){
             callback(-1, null);
+            errRaised = true;
+        }
         //
-
-        if(!Utils.TYPES.SUMMONERID.check(this.req.params.summonerID))
-            callback(-2, null);
+        if(!Utils.TYPES.SUMMONERID.check(this.req.params.summonerID)){
+            errRaised = true;
+            callback(-2, null);   
+        }
 
         // If we're there, that's all params are checked.
-        callback(null, null);
+        if(!errRaised)
+            callback(null, this.req.params.summonerID);
     }
 
-    _getSummonerMatchs(callback) {
-        console.log("Params ok !");
+    _getSummonerMatchs(summonerID, callback) {
+        console.log("Params ok !", arguments);
+        var url = Config.RIOT.API.GAME.getFullURL(summonerID);
+        if(url != null) {
+            fetch(url)
+            .then(function(response) {
+                // TODO : process response
+                return response.json();
+            })
+            .then(function(json){
+                res.json({matchs: json});
+            })
+            .catch(function(error) {
+                Log(TAGSLOG, error.message);
+            });
+        }
     }
 };
 
