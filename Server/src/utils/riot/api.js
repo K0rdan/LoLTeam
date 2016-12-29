@@ -1,5 +1,4 @@
 const RequestManager = require('./requestManager');
-const RequestErrorsManager = require('./requestErrorsManager');
 const PROTOCOL       = 'https';
 const REGION         = 'euw';
 
@@ -28,7 +27,7 @@ module.exports = {
             getIncludeTimeline: function() { return this.TIMELINE; },
             getBaseURL: function(gameID) { return getAPIBaseURL() + 'v' + this.VERSION + '/match/' + gameID ; },
             getFullURL: function(gameID) {
-                if(API_KEY != null)
+                if(gameID && API_KEY != null)
                     return this.getBaseURL(gameID) + '?includeTimeline=' + this.getIncludeTimeline() + '&api_key=' + API_KEY;
                 else 
                     return null;
@@ -36,6 +35,16 @@ module.exports = {
             getFullURLWithTimeline: function(gameID) {
                 if(gameID && API_KEY != null)
                     return this.getBaseURL(gameID) + '?includeTimeline=true&api_key=' + API_KEY;
+                else
+                    return null;
+            }
+        },
+        MATCHLIST: {
+            VERSION: '2.2',
+            getBaseURL: function(summonerID) { return getAPIBaseURL() + 'v' + this.VERSION + '/matchlist/by-summoner/' + summonerID ; },
+            getFullURL: function(summonerID, timestamp) { 
+                if(summonerID && timestamp && API_KEY != null)
+                    return this.getBaseURL(summonerID) + '?beginTime=' + timestamp + '&api_key=' + API_KEY;
                 else
                     return null;
             }
@@ -56,9 +65,6 @@ module.exports = {
         },
         push: function(url, callback) {
             requestManager._queuePushRequest(url, callback);
-        },
-        onError: function(route, data, err, callback) {
-            RequestErrorsManager(route, callback);
         }
     }
 };

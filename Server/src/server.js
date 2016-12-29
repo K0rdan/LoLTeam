@@ -59,25 +59,39 @@ module.exports = class Server {
             },
             // Init constants
             function(callback) {
-                var query = "SELECT * FROM lolteam.const WHERE name=? LIMIT 1;";
+                let error = false;
+                let query = "SELECT * FROM lolteam.const WHERE name=? LIMIT 1;";
+
                 me.connection.query(query, ['RIOT_API_KEY'], function(err, row, fields) {
                     if (!err){
-                        Config.RIOT.setAPIKey(row[0].value)
-                        Log(["SERVER", "INIT"], "API key loaded from DB.")
+                        if(row[0]) {
+                            Config.RIOT.setAPIKey(row[0].value)
+                            Log(["SERVER", "INIT"], "API key loaded from DB.")
+                        }
+                        else{
+                            error = true;
+                            callback("RIOT_API_KEY not found.", "RIOT_API_KEY");
+                        }
                     }
-                    else
+                    else {
+                        error = true;
                         callback(err, "MYSQL");
+                    }
                 });
 
-                me.connection.query(query, ['RIOT_API_LIMIT'], function(err, row, fields) {
-                    if (!err){
-                        Config.RIOT.REQUEST.setQueryRateLimit(row[0].value);
-                        Log(["SERVER", "INIT"], "API query limiter loaded from DB.");
-                        callback(null);
-                    }
-                    else
-                        callback(err, "MYSQL");
-                });
+                if(!error){
+                    me.connection.query(query, ['RIOT_API_LIMIT'], function(err, row, fields) {
+                        if (!err){
+                            if(row[0]){
+                                Config.RIOT.REQUEST.setQueryRateLimit(row[0].value);
+                                Log(["SERVER", "INIT"], "API query limiter loaded from DB.");
+                                callback(null);
+                            }
+                        }
+                        else
+                            callback(err, "MYSQL");
+                    });
+                }
             },
             // TODO : Clean teams temp data (update)
             function(callback) {
@@ -108,7 +122,7 @@ module.exports = class Server {
         this.app.disable('x-powered-by');
         // Allowances
         this.app.use(function(req, res, next) {
-            res.header("Access-Control-Allow-Origin", Config.SERVER.DOMAIN);     // Allow Origin : All
+            res.header("Access-Control-Allow-Origin", Config.SERVER.PROTOCOL + Config.SERVER.DOMAIN);     // Allow Origin : All
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
             res.header("Access-Control-Allow-Credentials", "true");
@@ -125,7 +139,7 @@ module.exports = class Server {
             saveUninitialized : false,                            // No session for unauthorized users
             resave            : false,                            // Disable unmodified session saving
             cookie: {
-                domain  : 'server',
+                domain  : Config.SERVER.DOMAIN,
                 path    : '/',
                 httpOnly: true,
                 maxAge  : 24*60*60*1000 
@@ -154,15 +168,10 @@ module.exports = class Server {
         });
 
         this.app.get("/", function(req, res) {
-            // TEMP
-            console.log(req.session);
-
-            if(req.cookies && req.cookies.lt_user) {
+            if(req.cookies && req.cookies.lt_user)
                 res.json({status: "ok", message: "You're now connected.", user : req.cookies.lt_user});
-            }
-            else {
+            else
                 res.json({status: "ko", message: "No session"});
-            }
         });
 
         // LOGIN

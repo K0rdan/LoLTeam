@@ -5,7 +5,6 @@ const fetch         = require('node-fetch');
 // Custom Imports
 const Config        = require('./../../utils/config');
 const Log           = require('./../../utils/log');
-const reqErrManager = require('./../../utils/riot/requestErrorsManager');
 const updateTeam    = require('./../../utils/database/updateTeam');
 // Logs
 const LOGTAGS = ["SERVER", "TeamMatchHistory"];

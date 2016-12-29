@@ -15,12 +15,14 @@ module.exports = class RequestManager {
         this.lastQuery      = 0;
         this.queryRateLimit = 1000;
         this.queryTimeout   = 10000;
+        this.waitingTime    = 10000;
         this.queue          = null;
         this.fetchOptions = {
             timeout: this.queryTimeout
         };
 
         // Custom binds
+        this._fetchErrors       = this._fetchErrors.bind(this);
         this._queueProcess      = this._queueProcess.bind(this);
         this._queueDrain        = this._queueDrain.bind(this);
         this._queuePushRequest  = this._queuePushRequest.bind(this);
@@ -38,12 +40,72 @@ module.exports = class RequestManager {
             this.queryRateLimit = queryRateLimit;
     }
 
+    _fetchErrors(err, url, callback) {
+        let retry = false, wait = false;
+
+        // If the API returns an error
+        if(err.message){
+            switch(err.message){
+                case "400": // Bad Request
+                    Log(LOGTAGS, "Request error : " + err.status + ", " + url);
+                    break;
+                case "401": // Unauthorized
+                    Log(LOGTAGS, "Unauthorized. Missing API_KEY ? " + url);
+                    break;
+                case "403": // Forbidden
+                    Log(LOGTAGS, "Unauthorized. Wrong API_KEY or revoked ? " + url);
+                    break;
+                case "404": // Team not found
+                    Log(LOGTAGS, "Team not found. Wrong team ID ? " + url);
+                    break;
+                case "429": // Rate limit exceed
+                    Log(LOGTAGS, "Request overflow. Waiting 10s..." + url);
+                    wait = true;
+                    retry = true;
+                    break;
+                case "500":
+                    Log(LOGTAGS, "Riot API error. Retrying...");
+                    retry = true;
+                    break;
+                case "503":
+                    Log(LOGTAGS, "Riot API unavailable. Retrying...");
+                    retry = true;
+                    break;
+            }
+        }
+
+        err.retry = retry;
+        err.wait = wait;
+        callback(err, null);
+    }
+
     // QUEUE METHOD HANDLERS
-    _queuePushRequest(reqUrl, callback) {
+    _queuePushRequest(reqUrl, reqCallback) {
         if(debug)
             console.log("[QUEUE] Pushing request");
 
-        this.queue.push(reqUrl, callback);
+        let me = this;
+        this.queue.push(reqUrl, function(err, result){
+            if(err == null)
+                reqCallback(null, result);
+            else {
+                if(err.retry) {
+                    if(err.wait){
+                        let startTime = Date.now();
+                        setTimeout(function() {
+                            if(debug)
+                                console.log((Date.now() - startTime) +"ms awaited");
+                            
+                            me._queuePushRequest(reqUrl, reqCallback);
+                        }, me.waitingTime);
+                    }
+                    else
+                        me._queuePushRequest(reqUrl, reqCallback);
+                }
+                else
+                    reqCallback(err, null);
+            }
+        });
     }
     _queueProcess(reqUrl, callback){
         try{
@@ -79,14 +141,14 @@ module.exports = class RequestManager {
             if(response.ok)
                 return response.json();
             else
-                callback(response, {status: "ko", message: "Fetch response error", error: response});
+                throw Error(response.status);
         })
         .then(function(json) {
             if(typeof(callback) == "function")
-                callback(null, { status: "ok", result: json });
+                callback(null, json);
         })
         .catch(function(e) {
-            callback(e, {status: "ko", message: "Fetch error", error: e});
+            me._fetchErrors(e, reqUrl, callback);
         });
     }
     _queueError(e, t) {

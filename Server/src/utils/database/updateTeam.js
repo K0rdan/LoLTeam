@@ -3,7 +3,6 @@ const _             = require('lodash');
 const async         = require('async');
 // Custom Imports
 const Config        = require('./../config');
-const reqErrManager = require('./../riot/requestErrorsManager');
 const insertMatch   = require('./insertMatch');
 const Log           = require('./../log');
 // Logs
@@ -119,9 +118,7 @@ module.exports = class updateTeam{
         let me = this;
         Config.RIOT.REQUEST.push(reqURL, function(err, fetchRes){
             if(err || !fetchRes) {
-                reqErrManager(LOGTAGS[1], {url: reqURL}, err, function(reqURL){
-                    me.pushRequest(reqURL, callback);
-                });
+                console.log("ERR", err);
             }
             else {
                 new insertMatch(me.teamID, me.mysql, fetchRes);
