@@ -46,6 +46,12 @@ module.exports = class Server {
                     me.isRedisConnected = true;
                     callback(null);
                 });
+                /*me.redisClient.on("error", function (err) {
+                    if(err){
+                        Log(["SERVER", "REDIS"], "REDIS_CONNECT...");
+                        console.log(err);
+                    }
+                });*/
             },
             // MySQL connection
             function(callback) {
@@ -154,10 +160,11 @@ module.exports = class Server {
         this.dataRoutes = {
             Login: require("./routes/login"),
             Logout: require("./routes/logout"),
-            getTeamsList: require("./routes/teams/getTeamsList"),
-            getTeamMatchHistory: require("./routes/teams/getTeamMatchHistory"),
+            getTeamsList: require("./routes/teams/getTeamsList"),               // Temporary deprecated
+            getTeamMatchHistory: require("./routes/teams/getTeamMatchHistory"), // Deprecated and partial implementation.
             getSummonerID: require("./routes/getSummonerID"),
-            getMatchHistory: require("./routes/getMatchHistory")
+            getMatchHistory: require("./routes/getMatchHistory"),
+            getMatchDetails: require("./routes/getMatchDetails")                // Temporary
         };
 
         var me = this;
@@ -206,6 +213,11 @@ module.exports = class Server {
         // MATCH HISTORY
         this.app.get("/matchhistory/:summonerID", function(req, res) {
             me.dataRoutes.getMatchHistory(req, res, me.connection, me.clientPool);
+        });
+        //
+        // MATCH DETAILS
+        this.app.get("/matchdetails/:matchID", function(req, res) {
+            me.dataRoutes.getMatchDetails(req, res, me.connection);
         });
     }
 

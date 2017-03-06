@@ -1,12 +1,12 @@
 // Lib Imports
-const _             = require('lodash');
-const async         = require('async');
-const fetch         = require('node-fetch');
+const _                 = require('lodash');
+const async             = require('async');
 // Custom Imports
-const Config        = require('./../utils/config');
-const Utils         = require('./../utils/utils');
-const Log           = require('./../utils/log');
+const Config            = require('./../utils/config');
+const Utils             = require('./../utils/utils');
+const Log               = require('./../utils/log');
 const getLastMatchIndex = require('./../utils/database/getLastMatchIndex');
+const getMatchDetails   = require('./getMatchDetails')
 // Logs
 const TAGSLOG = ["SERVER", "MatchHistory"];
 
@@ -41,11 +41,12 @@ class MatchHistory {
             let errMessage = "";
             
             switch(errCode){
-                case -1: errMessage = "Missing 'summonerID' parameter."; break;
-                case -2: errMessage = "Invalid 'summonerID' parameter."; break;
-                case -3: errMessage = "Invalid 'userID' parameter."; break;
-                case -4: errMessage = "Can't get MatchList URL."; break;
-                case -5: errMessage = "Unretryable error."; break;
+                case -1: errMessage = "You're not logged in"; break;
+                case -2: errMessage = "Missing 'summonerID' parameter."; break;
+                case -3: errMessage = "Invalid 'summonerID' parameter."; break;
+                case -4: errMessage = "Invalid 'userID' parameter."; break;
+                case -5: errMessage = "Can't get MatchList URL."; break;
+                case -6: errMessage = "Unretryable error."; break;
                 default: errMessage = "Unknow error.";
             }
 
@@ -64,27 +65,29 @@ class MatchHistory {
             Log(TAGSLOG, "checkParams");
 
         let errRaised = false;
-        // Unknow error
-        if(!this.req.params){
-            callback(0, null);
+
+        // No cookie
+        if(!this.req.cookies.lt_user){
             errRaised = true;
-        }
-        // Missing parameter
-        if(this.req.params.length == 0 || !this.req.params.summonerID){
             callback(-1, null);
-            errRaised = true;
         }
-        // Check SummonerID in param
-        if(!Utils.TYPES.SUMMONERID.check(this.req.params.summonerID)){
+
+        // Missing parameter
+        if(!errRaised && !this.req.params || this.req.params.length == 0 || !this.req.params.summonerID){
             errRaised = true;
             callback(-2, null);
+        }
+        // Check SummonerID in param
+        if(!errRaised && !Utils.TYPES.SUMMONERID.check(this.req.params.summonerID)){
+            errRaised = true;
+            callback(-3, null);
         }
         else
             this.summonerID = this.req.params.summonerID;
 
-        if(_.has(this.req, this.req.cookies.lt_user.id)){
+        if(!errRaised && _.has(this.req, this.req.cookies.lt_user.id)){
             errRaised = true;
-            callback(-3, null);
+            callback(-4, null);
         }
         else
             this.userID = this.req.cookies.lt_user.id;
@@ -106,7 +109,7 @@ class MatchHistory {
 
         if(!_.isUndefined(lastMatchIndex)){
             let me = this;
-            // '+1000' in the timestamp allow to not retrieve the last match we have already stored
+            // '+1000' (1 second) in the timestamp allow to not retrieve the last match we have already stored
             let url = Config.RIOT.API.MATCHLIST.getFullURL(this.summonerID, new Date(lastMatchIndex).getTime()+1000);
             if(url != null) {
                 Config.RIOT.REQUEST.push(url, function(err, fetchRes) {
@@ -117,12 +120,14 @@ class MatchHistory {
                 });
             }
             else
-                callback(-4, [this.summonerID, new Date(lastMatchIndex).getTime()+1000]);
+                callback(-5, [this.summonerID, new Date(lastMatchIndex).getTime()+1000]);
         }
     }
 
     _finish(result, callback) {
         // TODO : Save games into DB and init 'getMatchDetails'
+        new getMatchDetails(this.mysql);
+        // Did we wait the next steps ?
         callback(0,result);
     }
 };

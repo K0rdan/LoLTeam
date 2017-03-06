@@ -1,7 +1,7 @@
 import Log from "./../utils/log";
 
 const config = {
-    SERVER: "server",
+    SERVER: "localhost",
     PORT: 8000,
     TIMEOUT: 10000
 };
