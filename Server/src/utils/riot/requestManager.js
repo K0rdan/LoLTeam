@@ -8,7 +8,8 @@ const Log     = require('./../log');
 const LOGTAGS = ["RIOT", "RequestManager"];
 
 // Debug
-const debug = false;
+const debug = true;
+const verbose = true;
 
 module.exports = class RequestManager {
     constructor() {
@@ -41,6 +42,9 @@ module.exports = class RequestManager {
     }
 
     _fetchErrors(err, url, callback) {
+        if(debug)
+            console.log("[QUEUE] Fetching error", err);
+
         let retry = false, wait = false;
 
         // If the API returns an error
@@ -55,8 +59,8 @@ module.exports = class RequestManager {
                 case "403": // Forbidden
                     Log(LOGTAGS, "Unauthorized. Wrong API_KEY or revoked ? " + url);
                     break;
-                case "404": // Team not found
-                    Log(LOGTAGS, "Team not found. Wrong team ID ? " + url);
+                case "404": // Not found
+                    Log(LOGTAGS, "Not found. Wrong ID ? " + url);
                     break;
                 case "429": // Rate limit exceed
                     Log(LOGTAGS, "Request overflow. Waiting 10s..." + url);
@@ -71,6 +75,8 @@ module.exports = class RequestManager {
                     Log(LOGTAGS, "Riot API unavailable. Retrying...");
                     retry = true;
                     break;
+                default:
+                    Log(LOGTAGS, "Unhandled error");
             }
         }
 
@@ -132,18 +138,25 @@ module.exports = class RequestManager {
     }
     _queueExecuteRequest(reqUrl, callback) {
         if(debug)
-            console.log("[QUEUE] Executing request");
+            console.log("[QUEUE] Executing request : " + reqUrl);
 
         let me = this;
         fetch(url.parse(reqUrl), this.fetchOptions)
         .then(function(response) {
             me.lastQuery = Date.now();
+            
+            if(verbose)
+                console.log("[QUEUE] Result :", response);
+
             if(response.ok)
                 return response.json();
             else
                 throw Error(response.status);
         })
         .then(function(json) {
+            if(verbose)
+                console.log("[QUEUE] Callback : ", callback);
+
             if(typeof(callback) == "function")
                 callback(null, json);
         })

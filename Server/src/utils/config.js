@@ -3,7 +3,8 @@ const RIOTAPI = require('./riot/API');
 module.exports = {
     DEBUG: true,
     SERVER: {
-        DOMAIN: 'http://server',
+        PROTOCOL: 'http://',
+        DOMAIN: 'localhost',
         PORT: 8000,
         REDIS: {
             KEY : 'secret',

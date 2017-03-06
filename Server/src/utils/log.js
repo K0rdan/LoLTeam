@@ -8,7 +8,7 @@ function _getDate() {
         sec  = date.getSeconds();
     month = month < 9 ? "0"+month : month;
 
-    return year + "/" + (month < 10 ? "0" : "") + month + "/" + (day < 10 ? "0" : "") + day + ":" + (hour < 10 ? "0" : "") + hour + "-" + (min < 10 ? "0" : "") + min + "-" + (sec < 10 ? "0" : "") + sec;
+    return year + "/" + month + "/" + (day < 10 ? "0" : "") + day + ":" + (hour < 10 ? "0" : "") + hour + "-" + (min < 10 ? "0" : "") + min + "-" + (sec < 10 ? "0" : "") + sec;
 }
 
 module.exports = function Log(tags, msg) {
