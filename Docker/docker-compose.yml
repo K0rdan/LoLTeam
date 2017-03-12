@@ -7,8 +7,8 @@ services:
         volumes: 
             # Default MySQL data volume
             - /var/lib/mysql
-            # TODO : Custom directory with our SQL files
-            - ./../SQL:/home
+            # Custom directory with our SQL files
+            - ./SQL:/docker-entrypoint-initdb.d
         expose:
             # Default MySQL listening port 
             - "${MYSQL_PORT}"
